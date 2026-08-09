@@ -1,0 +1,30 @@
+# Core ML & NLP
+sentence-transformers>=2.2.2
+transformers>=4.30.0
+torch>=2.0.0
+scikit-learn>=1.2.0
+faiss-cpu>=1.7.4
+nltk>=3.8.1
+
+# Backend & API
+fastapi>=0.100.0
+uvicorn[standard]>=0.22.0
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+python-dotenv>=1.0.0
+requests>=2.31.0
+httpx>=0.24.0
+slowapi>=0.1.8
+structlog>=23.1.0
+sqlmodel>=0.0.12
+
+# Data Processing
+pandas>=2.0.0
+numpy>=1.24.0
+pyarrow>=12.0.0
+
+# Testing & Quality
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+ruff>=0.0.280
