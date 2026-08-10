@@ -84,6 +84,11 @@
   </div>
 
   <div class="flex items-center gap-4">
+    <!-- Spotify Account Profile Badge -->
+    <div id="spotifyProfileBadge" class="hidden sm:flex items-center gap-1.5 glass px-3.5 py-1.5 rounded-full text-xs font-mono text-emerald-400 border border-emerald-500/30">
+      🟢 Spotify Connected
+    </div>
+
     <a href="/docs" target="_blank" class="hidden sm:inline-flex items-center gap-1.5 glass text-xs px-3.5 py-2 rounded-full hover:border-primary/40 transition-all">
       <span class="material-symbols-outlined text-sm text-secondary">api</span> API Docs
     </a>
@@ -159,7 +164,7 @@
       </div>
 
       <div class="flex items-center gap-3 shrink-0">
-        <button onclick="exportPlaylistToSpotify()" class="glass border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 text-xs font-mono font-bold px-4 py-2 rounded-full flex items-center gap-1.5 transition-all">
+        <button type="button" onclick="exportPlaylistToSpotify(event)" class="glass border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 text-xs font-mono font-bold px-4 py-2 rounded-full flex items-center gap-1.5 transition-all">
           <span class="material-symbols-outlined text-base">file_upload</span> Export to Spotify 🟢
         </button>
       </div>
@@ -335,17 +340,57 @@ const audio = document.getElementById('audioPlayer');
 const playPauseIcon = document.getElementById('playPauseIcon');
 
 // Check URL query string or hash for Spotify OAuth code/token
-window.addEventListener('load', () => {
+window.addEventListener('load', async () => {
   const urlParams = new URLSearchParams(window.location.search);
   const hashParams = new URLSearchParams(window.location.hash.substring(1));
-  const token = urlParams.get('code') || urlParams.get('access_token') || hashParams.get('access_token');
+  const rawCode = urlParams.get('code');
+  const accessToken = urlParams.get('access_token') || hashParams.get('access_token');
 
-  if (token) {
-    localStorage.setItem('spotify_user_token', token);
+  if (rawCode) {
+    try {
+      const exRes = await fetch(`/api/v1/spotify/token-exchange?code=${encodeURIComponent(rawCode)}`);
+      if (exRes.ok) {
+        const exData = await exRes.json();
+        if (exData.access_token) {
+          localStorage.setItem('spotify_user_token', exData.access_token);
+        }
+      }
+    } catch (e) {}
     window.history.replaceState({}, document.title, window.location.pathname);
-    alert('✅ Logged into Spotify successfully! You can now export playlists directly to your Spotify account.');
+  } else if (accessToken) {
+    localStorage.setItem('spotify_user_token', accessToken);
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+
+  await checkSpotifyProfile();
+
+  // Restore search query & auto-export if coming back from OAuth redirect
+  const pendingQuery = localStorage.getItem('pending_export_query');
+  if (pendingQuery) {
+    document.getElementById('searchInput').value = pendingQuery;
+    await searchSongs();
+    localStorage.removeItem('pending_export_query');
+    setTimeout(() => {
+      exportPlaylistToSpotify();
+    }, 800);
   }
 });
+
+async function checkSpotifyProfile() {
+  const token = localStorage.getItem('spotify_user_token');
+  if (!token) return;
+  try {
+    const res = await fetch(`/api/v1/spotify/me?token=${encodeURIComponent(token)}`);
+    if (res.ok) {
+      const user = await res.json();
+      const badge = document.getElementById('spotifyProfileBadge');
+      if (badge) {
+        badge.innerHTML = `🟢 Spotify: ${user.display_name || user.email || user.id}`;
+        badge.classList.remove('hidden');
+      }
+    }
+  } catch (e) {}
+}
 
 // --- Web Audio API Spectrum Visualizer Core ---
 let audioCtx = null;
@@ -579,7 +624,9 @@ function playTrackAtIndex(index) {
   }).catch(() => {});
 }
 
-async function exportPlaylistToSpotify() {
+async function exportPlaylistToSpotify(evt) {
+  if (evt) evt.preventDefault();
+
   if (currentTrackList.length === 0) {
     alert('Please search for a vibe query first before exporting!');
     return;
@@ -589,33 +636,57 @@ async function exportPlaylistToSpotify() {
   const trackIds = currentTrackList.map(t => t.spotify_id || t.track_id).filter(Boolean);
   const currentQuery = document.getElementById('searchInput').value.trim() || 'VibeSync AI';
 
-  try {
-    const res = await fetch('/api/v1/playlists/export-spotify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        playlist_name: `VibeSync: ${currentQuery}`,
-        description: `Created with VibeSync AI Neural Vector Engine on ${new Date().toLocaleDateString()}`,
-        track_ids: trackIds,
-        user_token: userToken
-      })
-    });
+  const doExport = async (token) => {
+    try {
+      const res = await fetch('/api/v1/playlists/export-spotify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          playlist_name: `VibeSync: ${currentQuery}`,
+          description: `Created with VibeSync AI Neural Vector Engine on ${new Date().toLocaleDateString()}`,
+          track_ids: trackIds,
+          user_token: token
+        })
+      });
 
-    const data = await res.json();
-    if (data.status === 'requires_auth' || !data.success) {
-      if (confirm('1-Click Export directly to your Spotify account requires logging into your Spotify account. Would you like to authorize Spotify login now?')) {
-        const redirectUri = encodeURIComponent(window.location.origin + '/');
-        const authUrl = `https://accounts.spotify.com/authorize?client_id=5e5265a82d9040ec973ae86c1695834f&response_type=code&redirect_uri=${redirectUri}&scope=playlist-modify-public%20playlist-modify-private`;
-        window.location.href = authUrl;
+      const data = await res.json();
+      if (data.status === 'requires_auth') {
+        localStorage.removeItem('spotify_user_token');
+        if (confirm('Spotify authorization required. Log into Spotify now?')) {
+          redirectToSpotifyAuth(currentQuery);
+        }
+      } else if (!data.success) {
+        alert(`Spotify Export Response: ${data.message}`);
+      } else {
+        if (data.access_token) {
+          localStorage.setItem('spotify_user_token', data.access_token);
+        }
+        await checkSpotifyProfile();
+        alert(`🎉 ${data.message}\n\nOpening playlist link: ${data.playlist_url}`);
+        if (data.playlist_url) {
+          window.open(data.playlist_url, '_blank');
+        }
       }
-    } else {
-      alert(`🎉 ${data.message}\n\nOpened playlist link: ${data.playlist_url}`);
-      window.open(data.playlist_url, '_blank');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to connect to Spotify Export service.');
     }
-  } catch (err) {
-    console.error(err);
-    alert('Failed to connect to Spotify Export service.');
+  };
+
+  if (!userToken) {
+    redirectToSpotifyAuth(currentQuery);
+  } else {
+    doExport(userToken);
   }
+}
+
+function redirectToSpotifyAuth(query) {
+  if (query) {
+    localStorage.setItem('pending_export_query', query);
+  }
+  const redirectUri = encodeURIComponent(window.location.origin + '/');
+  const authUrl = `https://accounts.spotify.com/authorize?client_id=5e5265a82d9040ec973ae86c1695834f&response_type=code&redirect_uri=${redirectUri}&scope=user-read-private%20user-read-email%20playlist-modify-public%20playlist-modify-private`;
+  window.location.href = authUrl;
 }
 
 function loadSpotifyEmbed(spotifyId, songName, artist) {
