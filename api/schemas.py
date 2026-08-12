@@ -77,3 +77,12 @@ class SpotifyExportRequest(BaseModel):
     description: str = Field(default="Created via VibeSync AI Neural Recommender Engine")
     track_ids: List[str]
     user_token: Optional[str] = None
+
+
+class LyricTranslationRequest(BaseModel):
+    """Hindi, Punjabi and English lyric translation request schema."""
+
+    song_name: str
+    artist: str
+    target_language: Optional[str] = "English"
+    custom_lyrics: Optional[List[str]] = None

@@ -308,12 +308,12 @@
   </div>
 </div>
 
-<!-- History & Likes Modals -->
+<!-- History & Likes & Lyric Modals -->
 <div id="modalBackdrop" class="fixed inset-0 z-[120] bg-black/70 backdrop-blur-md hidden items-center justify-center p-6">
-  <div class="glass max-w-xl w-full rounded-2xl p-6 relative max-h-[80vh] flex flex-col">
+  <div class="glass max-w-4xl w-full rounded-2xl p-6 relative max-h-[85vh] flex flex-col shadow-2xl border border-white/10">
     <div class="flex justify-between items-center mb-4 pb-3 border-b border-outline-variant/20">
       <h3 id="modalTitle" class="font-headline text-xl font-bold text-on-surface">Modal Title</h3>
-      <button onclick="closeModal()" class="text-on-surface-variant hover:text-white">
+      <button onclick="closeModal()" class="text-on-surface-variant hover:text-white transition-colors">
         <span class="material-symbols-outlined">close</span>
       </button>
     </div>
@@ -578,6 +578,10 @@ async function searchSongs() {
             <span class="material-symbols-outlined text-sm">favorite</span> Like
           </button>
 
+          <button onclick="showLyricModal('${escapeQuotes(track.song_name)}', '${escapeQuotes(track.artist)}')" class="text-primary hover:underline flex items-center gap-1">
+            <span class="material-symbols-outlined text-xs">g_translate</span> Lyrics 🌐
+          </button>
+
           <button onclick="loadSpotifyEmbed('${track.spotify_id || ''}', '${escapeQuotes(track.song_name)}', '${escapeQuotes(track.artist)}')" class="text-secondary hover:underline flex items-center gap-1">
             <span class="material-symbols-outlined text-xs">music_note</span> Spotify Player
           </button>
@@ -687,6 +691,84 @@ function redirectToSpotifyAuth(query) {
   const redirectUri = encodeURIComponent(window.location.origin + '/');
   const authUrl = `https://accounts.spotify.com/authorize?client_id=5e5265a82d9040ec973ae86c1695834f&response_type=code&redirect_uri=${redirectUri}&scope=user-read-private%20user-read-email%20playlist-modify-public%20playlist-modify-private`;
   window.location.href = authUrl;
+}
+
+async function showLyricModal(songName, artist) {
+  const modal = document.getElementById('modalBackdrop');
+  document.getElementById('modalTitle').innerHTML = `🌐 Lyric Translation & Emotion Heatmap • <span class="text-secondary">${songName}</span>`;
+  const body = document.getElementById('modalBody');
+  body.innerHTML = `
+    <div class="p-6 text-center space-y-3">
+      <div class="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+      <p class="text-xs font-mono text-on-surface-variant">Translating lyrics & analyzing line-by-line sentiment heatmaps...</p>
+    </div>
+  `;
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+
+  try {
+    const res = await fetch('/api/v1/lyrics/translate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ song_name: songName, artist: artist, target_language: 'English' })
+    });
+    const data = await res.json();
+
+    const lines = data.heatmap_lines || [];
+    body.innerHTML = `
+      <div class="space-y-4">
+        <!-- Language & Emotion Header -->
+        <div class="flex justify-between items-center bg-surface-container-high/80 p-3 rounded-xl border border-white/10 text-xs font-mono">
+          <div class="flex items-center gap-2">
+            <span class="text-on-surface-variant">Language:</span>
+            <span class="bg-primary/20 text-primary border border-primary/30 px-2.5 py-0.5 rounded-full font-bold">${data.language}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-on-surface-variant">Dominant Emotion:</span>
+            <span class="bg-secondary/20 text-secondary border border-secondary/30 px-2.5 py-0.5 rounded-full uppercase font-bold">${data.dominant_emotion}</span>
+          </div>
+        </div>
+
+        <!-- Emotion Color Legend Bar -->
+        <div class="flex items-center justify-between gap-1 text-[11px] font-mono text-on-surface-variant px-1">
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-[#ffd700]"></span> Joy</span>
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-[#00eefc]"></span> Sadness</span>
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-[#ff6f7c]"></span> Energy</span>
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-[#c59aff]"></span> Romance</span>
+        </div>
+
+        <!-- Side-by-side Dual Pane Lyric Reader -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Left: Original Lyrics (Hindi / Punjabi / English) -->
+          <div class="glass p-4 rounded-xl space-y-2">
+            <h5 class="text-xs font-mono font-bold text-secondary border-b border-white/10 pb-2 mb-2">Original Lyrics (${data.language})</h5>
+            ${lines.map(line => `
+              <div class="p-2 rounded-lg text-xs font-body leading-relaxed border border-white/5 transition-all hover:border-white/20" style="background: ${line.bg}; border-left: 3px solid ${line.color}">
+                <p class="font-bold text-on-surface">${line.original}</p>
+              </div>
+            `).join('')}
+          </div>
+
+          <!-- Right: Translated English Lyrics -->
+          <div class="glass p-4 rounded-xl space-y-2">
+            <h5 class="text-xs font-mono font-bold text-primary border-b border-white/10 pb-2 mb-2">English Translation 🇬🇧</h5>
+            ${lines.map(line => `
+              <div class="p-2 rounded-lg text-xs font-body leading-relaxed border border-white/5 transition-all hover:border-white/20" style="background: ${line.bg}; border-left: 3px solid ${line.color}">
+                <p class="text-on-surface-variant font-medium">${line.translated}</p>
+                <div class="flex justify-between items-center mt-1 text-[10px] font-mono" style="color: ${line.color}">
+                  <span>${line.label}</span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+
+  } catch (err) {
+    console.error(err);
+    body.innerHTML = `<p class="text-tertiary">Failed to load lyric translation.</p>`;
+  }
 }
 
 function loadSpotifyEmbed(spotifyId, songName, artist) {
