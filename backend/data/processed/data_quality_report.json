@@ -1,0 +1,32 @@
+{
+  "timestamp": "2026-10-25T19:42:42.444038Z",
+  "raw_records_read": 50,
+  "duplicates_removed": 0,
+  "null_values_imputed": {
+    "lyrics": 0,
+    "release_year": 0,
+    "valence": 0,
+    "energy": 0,
+    "danceability": 0,
+    "tempo": 0,
+    "acousticness": 0
+  },
+  "valid_records_passed": 50,
+  "completeness_score": 100.0,
+  "validity_score": 100.0,
+  "feature_means": {
+    "valence": 0.4838,
+    "energy": 0.546,
+    "danceability": 0.5938000000000001,
+    "tempo": 121.08,
+    "acousticness": 0.4948
+  },
+  "feature_stds": {
+    "valence": 0.23298322616332148,
+    "energy": 0.25634001654371613,
+    "danceability": 0.22322213700477733,
+    "tempo": 26.337557570426117,
+    "acousticness": 0.2585930535550767
+  },
+  "warnings": []
+}
