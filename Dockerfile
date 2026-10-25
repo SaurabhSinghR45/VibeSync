@@ -21,6 +21,7 @@ WORKDIR /app
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app/backend:$PYTHONPATH \
     PATH=/root/.local/bin:$PATH
 
 # Copy installed python dependencies
@@ -31,7 +32,7 @@ COPY . .
 
 # Create unprivileged runtime user
 RUN useradd -m -u 1000 appuser && \
-    mkdir -p data/processed models && \
+    mkdir -p backend/data/processed backend/models && \
     chown -R appuser:appuser /app
 
 USER appuser
@@ -41,4 +42,4 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD curl -f http://localhost:8000/api/v1/health || exit 1
 
-CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "api.main:app", "--app-dir", "backend", "--host", "0.0.0.0", "--port", "8000"]

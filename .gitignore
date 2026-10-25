@@ -32,15 +32,21 @@ env/
 ENV/
 
 # Data & Model Binary Blobs
-models/*.pkl
-models/*.faiss
-data/raw/*
-!data/raw/.gitkeep
-data/processed/*
-!data/processed/.gitkeep
+*.pkl
+*.faiss
+*.parquet
+*.csv
 *.db
 *.sqlite
 *.sqlite3
+models/*
+**/models/*
+data/raw/*
+**/data/raw/*
+data/processed/*.csv
+**/data/processed/*.csv
+data/processed/*.parquet
+**/data/processed/*.parquet
 
 # Testing & Linting
 .pytest_cache/

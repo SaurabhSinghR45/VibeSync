@@ -1,0 +1,1643 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VibeSync | AI Sound Intelligence</title>
+<!-- Chrome Browser Tab Icon (Favicon) -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23c59aff'/%3E%3Cstop offset='50%25' stop-color='%239547f7'/%3E%3Cstop offset='100%25' stop-color='%2300eefc'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='16' fill='%230e0e13'/%3E%3Crect width='60' height='60' x='2' y='2' rx='14' fill='%2315151c' stroke='url(%23g)' stroke-width='2'/%3E%3Crect x='12' y='26' width='5' height='12' rx='2.5' fill='%23c59aff'/%3E%3Crect x='21' y='16' width='5' height='32' rx='2.5' fill='url(%23g)'/%3E%3Crect x='30' y='10' width='5' height='44' rx='2.5' fill='%2300eefc'/%3E%3Crect x='39' y='18' width='5' height='28' rx='2.5' fill='url(%23g)'/%3E%3Crect x='48' y='24' width='5' height='16' rx='2.5' fill='%23c59aff'/%3E%3C/svg%3E"/>
+<link rel="icon" type="image/svg+xml" href="/static/favicon.svg"/>
+<link rel="alternate icon" href="favicon.svg"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=container-queries"></script>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          "background": "#0e0e13",
+          "primary": "#c59aff",
+          "primary-dim": "#9547f7",
+          "secondary": "#00eefc",
+          "tertiary": "#ff6f7c",
+          "surface-container": "#19191f",
+          "surface-container-high": "#1f1f26",
+          "on-surface": "#f9f5fd",
+          "on-surface-variant": "#acaab1",
+          "outline-variant": "#48474d"
+        },
+        fontFamily: {
+          "headline": ["Space Grotesk", "sans-serif"],
+          "body": ["Manrope", "sans-serif"]
+        }
+      }
+    }
+  }
+</script>
+<style>
+  body {
+    background-color: #0e0e13;
+    color: #f9f5fd;
+    font-family: 'Manrope', sans-serif;
+  }
+  .font-headline { font-family: 'Space Grotesk', sans-serif; }
+  .glass {
+    background: rgba(25, 25, 31, 0.65);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .player-glass {
+    background: rgba(14, 14, 20, 0.92);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+  }
+  .shimmer {
+    background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+  }
+  @keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* Guarantee dark input: never turns white under typing, focus, or autofill */
+  #searchInput,
+  .dark-input,
+  input[type='text'],
+  input[type='search'],
+  input[type='email'],
+  input[type='password'],
+  input {
+    background-color: transparent !important;
+    color: #f9f5fd !important;
+    border-color: transparent !important;
+    outline: none !important;
+    box-shadow: none !important;
+  }
+  #searchInput:focus,
+  #searchInput:active,
+  .dark-input:focus,
+  input:focus,
+  input:active {
+    background-color: transparent !important;
+    color: #f9f5fd !important;
+    outline: none !important;
+    box-shadow: none !important;
+  }
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-text-fill-color: #f9f5fd !important;
+    -webkit-box-shadow: 0 0 0px 1000px #19191f inset !important;
+    box-shadow: 0 0 0px 1000px #19191f inset !important;
+    transition: background-color 5000s ease-in-out 0s !important;
+  }
+</style>
+</head>
+<body class="selection:bg-primary/30 pb-36">
+
+<!-- Audio Player Core -->
+<audio id="audioPlayer" crossorigin="anonymous" preload="auto"></audio>
+
+<!-- Useful & Professional Navigation Bar -->
+<nav class="fixed top-0 w-full z-50 glass px-6 sm:px-8 py-3.5 flex justify-between items-center max-w-full">
+  <!-- Brand Logo -->
+  <div class="flex items-center gap-2.5 cursor-pointer" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+    <span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 1;">graphic_eq</span>
+    <span class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary via-secondary to-tertiary font-headline tracking-tight">VibeSync</span>
+  </div>
+
+  <!-- Center Useful Navigation Links -->
+  <div class="hidden md:flex items-center gap-7 font-headline text-sm font-medium">
+    <a class="text-secondary border-b-2 border-secondary pb-1 tracking-wide" href="#hero">Discover</a>
+    <a class="text-on-surface-variant hover:text-on-surface transition-colors tracking-wide" href="#resultsSection">Recommendations</a>
+    <button onclick="showAnalyticsModal()" class="text-on-surface-variant hover:text-on-surface transition-colors tracking-wide flex items-center gap-1.5">
+      <span class="material-symbols-outlined text-base text-secondary">analytics</span> Market Analytics
+    </button>
+    <button onclick="openProfileModal()" class="text-on-surface-variant hover:text-on-surface transition-colors tracking-wide flex items-center gap-1.5">
+      <span class="material-symbols-outlined text-base text-tertiary">library_music</span> Library & Profile
+    </button>
+  </div>
+
+  <!-- Right Authentication & Account Status Area -->
+  <div id="navAuthArea" class="flex items-center gap-3">
+    <!-- Rendered dynamically by checkAuthStatus() -->
+    <button onclick="openAuthModal('login')" class="text-xs font-mono text-on-surface hover:text-white px-3 py-1.5 rounded-full hover:bg-white/5 transition-all">
+      Log In
+    </button>
+    <button onclick="openAuthModal('signup')" class="bg-gradient-to-r from-secondary to-primary text-black font-bold px-4 py-1.5 rounded-full text-xs font-headline hover:brightness-110 active:scale-95 transition-all">
+      Sign Up
+    </button>
+  </div>
+</nav>
+
+<main class="pt-20">
+  <!-- Hero Section -->
+  <section id="hero" class="relative min-h-[85vh] flex flex-col items-center justify-center px-6 overflow-hidden">
+    <!-- Animated Nebula Glow Background -->
+    <div class="absolute inset-0 z-0 pointer-events-none">
+      <div class="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-primary/20 rounded-full blur-[140px] opacity-40"></div>
+      <div class="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-secondary/15 rounded-full blur-[160px] opacity-30"></div>
+    </div>
+
+    <div class="relative z-10 text-center max-w-5xl mx-auto space-y-6">
+      <!-- AI Engine Status Badge -->
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass text-xs font-mono text-secondary border border-secondary/30 mb-2">
+        <span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+        Real-Time Sound Intelligence &bull; Over 26,000 Tracks Tuned to Your Vibe
+      </div>
+
+      <h1 class="font-headline text-5xl md:text-7xl lg:text-8xl font-bold tracking-tighter leading-tight">
+        Feel the Music.<br/>
+        <span class="bg-clip-text text-transparent bg-gradient-to-r from-primary via-secondary to-tertiary">Powered by Sound AI.</span>
+      </h1>
+
+      <p class="text-on-surface-variant font-light text-base md:text-xl max-w-2xl mx-auto font-body leading-relaxed">
+        Describe any mood, memory, or feeling in plain words—from late-night drives to sunrise workouts—and discover songs that match your exact wavelength.
+      </p>
+
+      <!-- Glowing Search Command Box (Guaranteed Dark Background) -->
+      <div class="relative max-w-3xl mx-auto mt-10 group">
+        <div class="absolute -inset-1 bg-gradient-to-r from-primary via-secondary to-tertiary rounded-full blur-xl opacity-25 group-focus-within:opacity-60 transition duration-500"></div>
+        <div class="relative flex items-center bg-[#19191f] backdrop-blur-2xl rounded-full px-6 py-4 border border-outline-variant/40 focus-within:border-secondary transition-all shadow-2xl">
+          <span class="material-symbols-outlined text-secondary mr-4 text-2xl">search</span>
+          <input
+            id="searchInput"
+            autocomplete="off"
+            spellcheck="false"
+            class="bg-transparent border-none focus:ring-0 w-full text-on-surface placeholder:text-on-surface-variant/50 text-base md:text-lg font-body"
+            placeholder="Describe your vibe (e.g. 'hindi sad song', 'acoustic rainy day', 'arijit singh')..."
+            type="text"
+            onkeypress="if(event.key==='Enter') searchSongs()"
+          />
+          <button type="button" onclick="searchSongs()" class="bg-gradient-to-r from-secondary to-primary text-black font-headline font-bold px-7 py-2.5 rounded-full text-sm tracking-wide hover:brightness-110 active:scale-95 transition-all shrink-0 ml-2">
+            Search Vibe
+          </button>
+        </div>
+      </div>
+
+      <!-- Clean Prompt Chips (No Emojis) -->
+      <div class="flex flex-wrap items-center justify-center gap-2 pt-4">
+        <span class="text-xs text-on-surface-variant font-mono mr-1">Curated Prompts:</span>
+        <button onclick="setPrompt('hindi sad song')" class="glass hover:border-secondary/50 text-xs px-3.5 py-1.5 rounded-full text-on-surface-variant hover:text-secondary transition-all">Hindi Sad Songs</button>
+        <button onclick="setPrompt('melancholic acoustic guitar')" class="glass hover:border-primary/50 text-xs px-3.5 py-1.5 rounded-full text-on-surface-variant hover:text-primary transition-all">Melancholic Acoustic</button>
+        <button onclick="setPrompt('cyberpunk synthwave workout')" class="glass hover:border-secondary/50 text-xs px-3.5 py-1.5 rounded-full text-on-surface-variant hover:text-secondary transition-all">Synthwave Energy</button>
+        <button onclick="setPrompt('ambient lo-fi coding beats')" class="glass hover:border-secondary/50 text-xs px-3.5 py-1.5 rounded-full text-on-surface-variant hover:text-secondary transition-all">Lo-Fi Coding</button>
+        <button onclick="setPrompt('romantic vocal harmonies')" class="glass hover:border-tertiary/50 text-xs px-3.5 py-1.5 rounded-full text-on-surface-variant hover:text-tertiary transition-all">Romantic Vocal</button>
+      </div>
+    </div>
+
+    <!-- Live HTML5 Canvas Audio Waveform Visualizer -->
+    <div class="absolute bottom-0 left-0 w-full h-28 pointer-events-none z-10 flex items-end">
+      <canvas id="heroVisualizerCanvas" class="w-full h-full opacity-60"></canvas>
+    </div>
+  </section>
+
+  <!-- Recommendations Results Section -->
+  <section id="resultsSection" class="py-16 px-6 max-w-7xl mx-auto hidden">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 gap-4 border-b border-outline-variant/20 pb-6">
+      <div>
+        <div class="flex items-center gap-3 mb-1">
+          <h2 class="font-headline text-3xl font-bold">Recommended Tracks</h2>
+          <span id="emotionBadge" class="bg-secondary/20 text-secondary border border-secondary/30 text-xs font-mono px-3 py-1 rounded-full uppercase"></span>
+        </div>
+        <p id="searchMetaText" class="text-on-surface-variant text-sm font-mono"></p>
+      </div>
+
+      <div class="flex items-center gap-3 shrink-0">
+        <button type="button" onclick="createPlaylistFromResults()" class="glass border-secondary/40 text-secondary hover:bg-secondary/10 text-xs font-mono font-bold px-4 py-2 rounded-full flex items-center gap-1.5 transition-all">
+          <span class="material-symbols-outlined text-base">playlist_add</span> Save as Playlist
+        </button>
+      </div>
+    </div>
+
+    <!-- Recommendations Grid Container -->
+    <div id="resultsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+  </section>
+
+  <!-- Discover Curated Section -->
+  <section id="discoverSection" class="py-20 px-6 max-w-7xl mx-auto">
+    <div class="mb-10 flex justify-between items-end">
+      <div>
+        <h2 class="font-headline text-4xl font-bold mb-2">Discover Curated Vibes</h2>
+        <p class="text-on-surface-variant text-sm">Handcrafted sonic journeys matched to different states of mind.</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+      <div onclick="setPrompt('sad acoustic guitar introspection')" class="glass rounded-2xl p-5 group cursor-pointer hover:border-primary/50 transition-all hover:-translate-y-1.5">
+        <div class="aspect-square rounded-xl overflow-hidden mb-4 relative">
+          <img src="https://images.unsplash.com/photo-1518609878373-06d740f60d8b?w=500&auto=format&fit=crop&q=60" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
+          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-4">
+            <span class="text-xs font-mono text-secondary bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full">2.4M Listeners</span>
+          </div>
+        </div>
+        <h3 class="font-headline text-xl font-bold mb-1">Late Night Acoustic</h3>
+        <p class="text-on-surface-variant text-xs font-body">Introspective acoustic & slow melodies.</p>
+      </div>
+
+      <div onclick="setPrompt('high energy dance electronic synthwave')" class="glass rounded-2xl p-5 group cursor-pointer hover:border-secondary/50 transition-all hover:-translate-y-1.5">
+        <div class="aspect-square rounded-xl overflow-hidden mb-4 relative">
+          <img src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=500&auto=format&fit=crop&q=60" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
+          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-4">
+            <span class="text-xs font-mono text-tertiary bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full">5.1M Listeners</span>
+          </div>
+        </div>
+        <h3 class="font-headline text-xl font-bold mb-1">Peak Energy</h3>
+        <p class="text-on-surface-variant text-xs font-body">High bpm electronic & synthwave tracks.</p>
+      </div>
+
+      <div onclick="setPrompt('chill lo-fi beats rain study')" class="glass rounded-2xl p-5 group cursor-pointer hover:border-tertiary/50 transition-all hover:-translate-y-1.5">
+        <div class="aspect-square rounded-xl overflow-hidden mb-4 relative">
+          <img src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500&auto=format&fit=crop&q=60" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
+          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-4">
+            <span class="text-xs font-mono text-primary bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full">3.7M Listeners</span>
+          </div>
+        </div>
+        <h3 class="font-headline text-xl font-bold mb-1">Focus Soundscapes</h3>
+        <p class="text-on-surface-variant text-xs font-body">Relaxing ambient lo-fi textures.</p>
+      </div>
+
+      <div onclick="setPrompt('romantic bollywood emotional vocal')" class="glass rounded-2xl p-5 group cursor-pointer hover:border-secondary/50 transition-all hover:-translate-y-1.5">
+        <div class="aspect-square rounded-xl overflow-hidden mb-4 relative">
+          <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500&auto=format&fit=crop&q=60" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
+          <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-4">
+            <span class="text-xs font-mono text-secondary bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full">1.9M Listeners</span>
+          </div>
+        </div>
+        <h3 class="font-headline text-xl font-bold mb-1">Vocal Harmonies</h3>
+        <p class="text-on-surface-variant text-xs font-body">Heartfelt ballads & emotional duets.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- Official Spotify Real Player Iframe Drawer (Plays Real Original Song) -->
+<div id="spotifyEmbedContainer" class="fixed bottom-24 left-1/2 -translate-x-1/2 z-[110] w-full max-w-2xl px-4 hidden">
+  <div class="glass rounded-2xl p-3 shadow-2xl relative border border-secondary/40">
+    <div class="flex justify-between items-center mb-2 px-2 text-xs font-mono text-secondary">
+      <span class="flex items-center gap-1.5">
+        <span class="material-symbols-outlined text-sm">play_circle</span>
+        Original Song Player
+      </span>
+      <button onclick="closeSpotifyEmbed()" class="hover:text-white text-on-surface-variant">
+        <span class="material-symbols-outlined text-sm">close</span>
+      </button>
+    </div>
+    <div id="spotifyEmbedFrameWrapper"></div>
+  </div>
+</div>
+
+<!-- Persistent Reactive Music Player Bar -->
+<div id="playerBar" class="fixed bottom-0 left-0 w-full z-[100] player-glass px-6 py-3.5">
+  <div class="max-w-screen-2xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+
+    <!-- Currently Playing Info (Left) -->
+    <div class="flex items-center gap-4 w-full md:w-1/4">
+      <div class="w-14 h-14 rounded-xl overflow-hidden shrink-0 border border-white/10 relative group bg-black/40">
+        <img id="playerAlbumArt" src="https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=200&auto=format&fit=crop&q=60" class="w-full h-full object-cover"/>
+      </div>
+      <div class="overflow-hidden">
+        <h5 id="playerSongTitle" class="font-headline font-bold text-sm truncate text-on-surface">Select a Track to Play</h5>
+        <p id="playerArtistName" class="text-xs text-on-surface-variant truncate">VibeSync Audio Engine</p>
+      </div>
+      <button id="playerLikeBtn" onclick="toggleCurrentLike()" class="text-on-surface-variant hover:text-tertiary transition-colors ml-auto md:ml-0">
+        <span class="material-symbols-outlined text-xl">favorite</span>
+      </button>
+    </div>
+
+    <!-- Playback Controls & Progress Bar (Center) -->
+    <div class="flex flex-col items-center gap-2 w-full md:w-2/4 max-w-xl">
+      <div class="flex items-center gap-6">
+        <button onclick="playPrevTrack()" class="text-on-surface-variant hover:text-white transition-colors">
+          <span class="material-symbols-outlined text-2xl">skip_previous</span>
+        </button>
+
+        <button id="playPauseBtn" onclick="togglePlayPause()" class="w-11 h-11 bg-gradient-to-r from-secondary to-primary text-black rounded-full flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-[0_0_20px_rgba(0,238,252,0.4)]">
+          <span id="playPauseIcon" class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+        </button>
+
+        <button onclick="playNextTrack()" class="text-on-surface-variant hover:text-white transition-colors">
+          <span class="material-symbols-outlined text-2xl">skip_next</span>
+        </button>
+      </div>
+
+      <!-- Audio Seek Bar -->
+      <div class="w-full flex items-center gap-3 text-xs font-mono text-on-surface-variant">
+        <span id="currentTimeText">0:00</span>
+        <input id="seekSlider" type="range" min="0" max="100" value="0" oninput="seekAudio(this.value)" class="w-full h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-secondary"/>
+        <span id="durationTimeText">0:30</span>
+      </div>
+    </div>
+
+    <!-- Visualizer & Volume & Spotify Link (Right) -->
+    <div class="hidden md:flex items-center justify-end gap-4 w-1/4">
+      <canvas id="playerVisualizerCanvas" class="w-20 h-8 shrink-0 rounded-lg bg-black/40 border border-white/10"></canvas>
+
+      <div class="flex items-center gap-2 w-24">
+        <span class="material-symbols-outlined text-lg text-on-surface-variant">volume_up</span>
+        <input id="volumeSlider" type="range" min="0" max="1" step="0.05" value="0.8" oninput="setVolume(this.value)" class="w-full h-1 bg-white/20 rounded-lg appearance-none cursor-pointer accent-primary"/>
+      </div>
+
+      <button id="spotifyEmbedToggleBtn" onclick="toggleSpotifyEmbed()" class="glass px-3.5 py-1.5 rounded-full text-xs font-mono text-secondary hover:border-secondary/40 transition-all flex items-center gap-1.5 shrink-0">
+        <span class="material-symbols-outlined text-sm">open_in_new</span> Open Player
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Reusable Modal Backdrop -->
+<div id="modalBackdrop" class="fixed inset-0 z-[120] bg-black/75 backdrop-blur-md hidden items-center justify-center p-6">
+  <div class="glass max-w-4xl w-full rounded-2xl p-6 relative max-h-[85vh] flex flex-col shadow-2xl border border-white/10">
+    <div class="flex justify-between items-center mb-4 pb-3 border-b border-outline-variant/20">
+      <h3 id="modalTitle" class="font-headline text-xl font-bold text-on-surface">Modal Title</h3>
+      <button onclick="closeModal()" class="text-on-surface-variant hover:text-white transition-colors">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div id="modalBody" class="overflow-y-auto space-y-4 font-body text-sm"></div>
+  </div>
+</div>
+
+<!-- User Authentication Modal -->
+<div id="authModal" class="fixed inset-0 z-[130] bg-black/80 backdrop-blur-md hidden items-center justify-center p-4">
+  <div class="bg-[#191922] border border-white/15 max-w-md w-full rounded-2xl p-6 shadow-2xl relative">
+    <div class="flex justify-between items-center mb-5 pb-3 border-b border-white/10">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-secondary">account_circle</span>
+        <h3 id="authModalTitle" class="font-headline text-lg font-bold text-white">Sign In to VibeSync</h3>
+      </div>
+      <button onclick="closeAuthModal()" class="text-on-surface-variant hover:text-white">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <!-- Auth Tabs -->
+    <div class="flex border-b border-white/10 mb-5 text-sm font-mono">
+      <button id="authTabLogin" onclick="switchAuthTab('login')" class="flex-1 pb-2 border-b-2 border-secondary font-bold text-secondary text-center">
+        Log In
+      </button>
+      <button id="authTabSignup" onclick="switchAuthTab('signup')" class="flex-1 pb-2 border-b-2 border-transparent text-on-surface-variant hover:text-white text-center">
+        Create Account
+      </button>
+    </div>
+
+    <!-- Auth Form -->
+    <form onsubmit="handleAuthSubmit(event)" class="space-y-4">
+      <div>
+        <label class="block text-xs font-mono text-on-surface-variant mb-1">Username</label>
+        <div class="bg-[#121217] border border-white/10 rounded-xl px-3 py-2 focus-within:border-secondary">
+          <input id="authUsername" type="text" required placeholder="Choose a username" class="w-full bg-transparent text-white text-sm focus:outline-none"/>
+        </div>
+      </div>
+
+      <div id="authEmailContainer" class="hidden">
+        <label class="block text-xs font-mono text-on-surface-variant mb-1">Email Address</label>
+        <div class="bg-[#121217] border border-white/10 rounded-xl px-3 py-2 focus-within:border-secondary">
+          <input id="authEmail" type="email" placeholder="name@domain.com" class="w-full bg-transparent text-white text-sm focus:outline-none"/>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-mono text-on-surface-variant mb-1">Password</label>
+        <div class="bg-[#121217] border border-white/10 rounded-xl px-3 py-2 focus-within:border-secondary">
+          <input id="authPassword" type="password" required minlength="6" placeholder="At least 6 characters" class="w-full bg-transparent text-white text-sm focus:outline-none"/>
+        </div>
+      </div>
+
+      <div id="authErrorMsg" class="hidden text-xs text-red-400 font-mono"></div>
+
+      <button type="submit" id="authSubmitBtn" class="w-full bg-gradient-to-r from-secondary to-primary text-black font-headline font-bold py-2.5 rounded-xl text-sm hover:brightness-110 active:scale-95 transition-all">
+        Log In
+      </button>
+
+      <p class="text-[11px] text-center text-on-surface-variant">
+        Guests can still search songs freely. Logging in saves your search history, favorites, and playlists.
+      </p>
+    </form>
+  </div>
+</div>
+
+<!-- Custom Themed Create Playlist Modal (Replaces browser prompt) -->
+<div id="createPlaylistModal" class="fixed inset-0 z-[140] bg-black/85 backdrop-blur-md hidden items-center justify-center p-4">
+  <div class="bg-[#14141d] border border-outline-variant/40 max-w-lg w-full rounded-2xl p-6 shadow-2xl relative space-y-5 animate-fade-in">
+    <div class="flex justify-between items-start pb-3 border-b border-white/10">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-primary/15 border border-primary/30 flex items-center justify-center text-primary">
+          <span class="material-symbols-outlined text-2xl">playlist_add</span>
+        </div>
+        <div>
+          <h3 id="playlistModalTitle" class="font-headline text-lg font-bold text-white">Create Vibe Playlist</h3>
+          <p id="playlistModalSubtitle" class="text-xs text-on-surface-variant font-mono">Curate and save this mood to your personal library</p>
+        </div>
+      </div>
+      <button onclick="closePlaylistModal()" class="text-on-surface-variant hover:text-white p-1">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <!-- Active Search Source Badge (if saving from search results) -->
+    <div id="playlistModalContext" class="hidden glass p-3 rounded-xl border border-secondary/30 flex items-center justify-between text-xs font-mono">
+      <span class="text-on-surface-variant">Attaching Current Search:</span>
+      <span id="playlistTrackCountBadge" class="text-secondary font-bold">0 Tracks</span>
+    </div>
+
+    <div>
+      <label class="block text-xs font-mono text-on-surface-variant mb-2">Playlist Name</label>
+      <input
+        id="newPlaylistNameInput"
+        type="text"
+        placeholder="e.g. Late Night Midnight Drive"
+        class="w-full bg-[#1b1b26] border border-white/15 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-secondary transition-all"
+        onkeypress="if(event.key==='Enter') confirmCreatePlaylist()"
+      />
+    </div>
+
+    <!-- Theme Inspiration Chips -->
+    <div>
+      <span class="text-[11px] font-mono text-on-surface-variant block mb-2">Theme Inspiration:</span>
+      <div class="flex flex-wrap gap-2">
+        <button type="button" onclick="setPlaylistNameSuggestion('Late Night Rain Drive')" class="text-[11px] font-mono glass px-2.5 py-1 rounded-full text-on-surface-variant hover:text-secondary hover:border-secondary/40 transition-all">Late Night Rain</button>
+        <button type="button" onclick="setPlaylistNameSuggestion('Cyberpunk Synth Energy')" class="text-[11px] font-mono glass px-2.5 py-1 rounded-full text-on-surface-variant hover:text-primary hover:border-primary/40 transition-all">Cyberpunk Energy</button>
+        <button type="button" onclick="setPlaylistNameSuggestion('Deep Focus Ambient')" class="text-[11px] font-mono glass px-2.5 py-1 rounded-full text-on-surface-variant hover:text-secondary hover:border-secondary/40 transition-all">Deep Focus</button>
+        <button type="button" onclick="setPlaylistNameSuggestion('Melancholic Soul')" class="text-[11px] font-mono glass px-2.5 py-1 rounded-full text-on-surface-variant hover:text-tertiary hover:border-tertiary/40 transition-all">Melancholic Soul</button>
+        <button type="button" onclick="setPlaylistNameSuggestion('Acoustic Coffeehouse Chill')" class="text-[11px] font-mono glass px-2.5 py-1 rounded-full text-on-surface-variant hover:text-secondary hover:border-secondary/40 transition-all">Coffeehouse Chill</button>
+      </div>
+    </div>
+
+    <div class="flex gap-3 pt-2">
+      <button type="button" onclick="closePlaylistModal()" class="flex-1 glass py-2.5 rounded-xl text-xs font-mono text-on-surface-variant hover:text-white transition-all">
+        Cancel
+      </button>
+      <button type="button" onclick="confirmCreatePlaylist()" class="flex-1 bg-gradient-to-r from-secondary to-primary text-black font-headline font-bold py-2.5 rounded-xl text-sm hover:brightness-110 active:scale-95 transition-all">
+        Save Playlist
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Dedicated User Profile Section Modal -->
+<div id="profileModal" class="fixed inset-0 z-[135] bg-black/85 backdrop-blur-md hidden items-center justify-center p-4">
+  <div class="bg-[#14141d] border border-white/10 max-w-2xl w-full rounded-2xl p-6 shadow-2xl relative max-h-[90vh] flex flex-col space-y-5 animate-fade-in">
+    <!-- Profile Header -->
+    <div class="flex justify-between items-start pb-4 border-b border-white/10">
+      <div class="flex items-center gap-4">
+        <!-- Big Gradient Avatar Circle -->
+        <div id="profileAvatarBig" class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-primary via-primary-dim to-secondary flex items-center justify-center text-black font-headline font-bold text-2xl uppercase shadow-lg shadow-primary/20 shrink-0">
+          U
+        </div>
+        <div>
+          <div class="flex items-center gap-2 flex-wrap">
+            <h3 id="profileUsername" class="font-headline text-2xl font-bold text-white">Username</h3>
+            <span class="bg-secondary/15 text-secondary border border-secondary/30 text-[10px] font-mono px-2 py-0.5 rounded-full uppercase tracking-wider">AI Curator</span>
+          </div>
+          <p id="profileEmail" class="text-xs text-on-surface-variant font-mono mt-0.5">user@domain.com</p>
+        </div>
+      </div>
+      <button onclick="closeProfileModal()" class="text-on-surface-variant hover:text-white p-1">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <!-- Quick Stats Cards -->
+    <div class="grid grid-cols-3 gap-3">
+      <div class="glass p-3 rounded-xl text-center border border-primary/20">
+        <span class="material-symbols-outlined text-primary text-xl mb-1">queue_music</span>
+        <div id="profilePlaylistCount" class="font-headline font-bold text-xl text-white">0</div>
+        <div class="text-[10px] font-mono text-on-surface-variant uppercase tracking-wider">Playlists</div>
+      </div>
+      <div class="glass p-3 rounded-xl text-center border border-tertiary/20">
+        <span class="material-symbols-outlined text-tertiary text-xl mb-1">favorite</span>
+        <div id="profileLikedCount" class="font-headline font-bold text-xl text-white">0</div>
+        <div class="text-[10px] font-mono text-on-surface-variant uppercase tracking-wider">Liked Songs</div>
+      </div>
+      <div class="glass p-3 rounded-xl text-center border border-secondary/20">
+        <span class="material-symbols-outlined text-secondary text-xl mb-1">history</span>
+        <div id="profileHistoryCount" class="font-headline font-bold text-xl text-white">0</div>
+        <div class="text-[10px] font-mono text-on-surface-variant uppercase tracking-wider">Vibe Searches</div>
+      </div>
+    </div>
+
+    <!-- Profile Action Bar & Tabs -->
+    <div class="flex justify-between items-center border-b border-white/10 text-xs font-mono">
+      <div class="flex gap-2">
+        <button id="profileTabPlaylists" onclick="switchProfileTab('playlists')" class="px-3 py-2 border-b-2 border-primary text-primary font-bold">Playlists</button>
+        <button id="profileTabLikes" onclick="switchProfileTab('likes')" class="px-3 py-2 border-b-2 border-transparent text-on-surface-variant hover:text-white">Liked Songs</button>
+        <button id="profileTabHistory" onclick="switchProfileTab('history')" class="px-3 py-2 border-b-2 border-transparent text-on-surface-variant hover:text-white">Search History</button>
+      </div>
+      <button onclick="openPlaylistModal(false)" class="text-secondary hover:text-white flex items-center gap-1 text-[11px] pb-1 font-mono">
+        <span class="material-symbols-outlined text-sm">add</span> New Playlist
+      </button>
+    </div>
+
+    <!-- Tab Dynamic Content Container -->
+    <div id="profileTabContent" class="overflow-y-auto max-h-[40vh] space-y-2 pr-1 min-h-[140px]"></div>
+
+    <!-- Profile Footer -->
+    <div class="pt-3 border-t border-white/10 flex justify-between items-center">
+      <button onclick="logout()" class="text-xs font-mono text-tertiary hover:underline flex items-center gap-1.5">
+        <span class="material-symbols-outlined text-base">logout</span> Log Out
+      </button>
+      <button onclick="closeProfileModal()" class="glass px-5 py-2 rounded-xl text-xs font-mono text-white hover:border-white/40">
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Floating Notification Toast -->
+<div id="toastNotification" class="fixed bottom-6 right-6 z-[200] max-w-sm glass border border-secondary/40 shadow-2xl p-4 rounded-xl flex items-center gap-3 transition-all duration-300 translate-y-20 opacity-0 pointer-events-none">
+  <span id="toastIcon" class="material-symbols-outlined text-secondary text-2xl">check_circle</span>
+  <p id="toastMessage" class="text-xs font-mono text-white leading-snug">Notification</p>
+</div>
+
+<script>
+// Authentication & User State
+let currentUser = null;
+let authToken = localStorage.getItem('vibesync_auth_token') || null;
+
+// Application State
+let currentTrackList = [];
+let currentTrackIndex = 0;
+let currentTrackObj = null;
+
+const audio = document.getElementById('audioPlayer');
+const playPauseIcon = document.getElementById('playPauseIcon');
+
+// Initialize user session on startup
+window.addEventListener('load', async () => {
+  await checkAuthStatus();
+});
+
+// Helper for authenticated API calls
+function getAuthHeaders() {
+  const headers = { 'Content-Type': 'application/json' };
+  if (authToken) {
+    headers['Authorization'] = `Bearer ${authToken}`;
+  }
+  return headers;
+}
+
+async function checkAuthStatus() {
+  const navArea = document.getElementById('navAuthArea');
+  if (!authToken) {
+    currentUser = null;
+    navArea.innerHTML = `
+      <button onclick="openAuthModal('login')" class="text-xs font-mono text-on-surface-variant hover:text-white px-3 py-1.5 rounded-full hover:bg-white/5 transition-all">
+        Log In
+      </button>
+      <button onclick="openAuthModal('signup')" class="bg-gradient-to-r from-secondary to-primary text-black font-bold px-4 py-1.5 rounded-full text-xs font-headline hover:brightness-110 active:scale-95 transition-all">
+        Sign Up
+      </button>
+    `;
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/v1/auth/me', { headers: getAuthHeaders() });
+    if (res.ok) {
+      currentUser = await res.json();
+      navArea.innerHTML = `
+        <div class="flex items-center gap-2.5">
+          <button onclick="openProfileModal()" class="glass px-3.5 py-1.5 rounded-full flex items-center gap-2 hover:border-primary/50 transition-all group" title="Open My Profile">
+            <div class="w-6 h-6 rounded-full bg-gradient-to-tr from-primary to-secondary flex items-center justify-center text-black font-bold text-xs uppercase shadow-sm">
+              ${(currentUser.username || 'U').charAt(0)}
+            </div>
+            <span class="text-xs font-mono text-white font-semibold group-hover:text-primary transition-colors">${currentUser.username}</span>
+            <span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+          </button>
+          <button onclick="logout()" class="text-on-surface-variant hover:text-tertiary transition-colors p-1.5 rounded-full hover:bg-white/5" title="Log Out">
+            <span class="material-symbols-outlined text-lg">logout</span>
+          </button>
+        </div>
+      `;
+    } else {
+      // Token expired
+      logout(false);
+    }
+  } catch (e) {
+    console.error('Failed to verify session:', e);
+  }
+}
+
+let activeAuthTab = 'login';
+function openAuthModal(tab = 'login') {
+  activeAuthTab = tab;
+  switchAuthTab(tab);
+  document.getElementById('authErrorMsg').classList.add('hidden');
+  document.getElementById('authModal').classList.remove('hidden');
+  document.getElementById('authModal').classList.add('flex');
+}
+
+function closeAuthModal() {
+  document.getElementById('authModal').classList.add('hidden');
+  document.getElementById('authModal').classList.remove('flex');
+}
+
+function switchAuthTab(tab) {
+  activeAuthTab = tab;
+  const loginTab = document.getElementById('authTabLogin');
+  const signupTab = document.getElementById('authTabSignup');
+  const emailBox = document.getElementById('authEmailContainer');
+  const emailInput = document.getElementById('authEmail');
+  const submitBtn = document.getElementById('authSubmitBtn');
+  const title = document.getElementById('authModalTitle');
+
+  if (tab === 'login') {
+    loginTab.className = "flex-1 pb-2 border-b-2 border-secondary font-bold text-secondary text-center";
+    signupTab.className = "flex-1 pb-2 border-b-2 border-transparent text-on-surface-variant hover:text-white text-center";
+    emailBox.classList.add('hidden');
+    emailInput.required = false;
+    submitBtn.innerText = "Log In";
+    title.innerText = "Sign In to VibeSync";
+  } else {
+    signupTab.className = "flex-1 pb-2 border-b-2 border-primary font-bold text-primary text-center";
+    loginTab.className = "flex-1 pb-2 border-b-2 border-transparent text-on-surface-variant hover:text-white text-center";
+    emailBox.classList.remove('hidden');
+    emailInput.required = true;
+    submitBtn.innerText = "Create Account";
+    title.innerText = "Create Free VibeSync Account";
+  }
+}
+
+async function handleAuthSubmit(evt) {
+  evt.preventDefault();
+  const username = document.getElementById('authUsername').value.trim();
+  const password = document.getElementById('authPassword').value;
+  const email = document.getElementById('authEmail').value.trim();
+  const errorMsg = document.getElementById('authErrorMsg');
+  errorMsg.classList.add('hidden');
+
+  const endpoint = activeAuthTab === 'signup' ? '/api/v1/auth/signup' : '/api/v1/auth/login';
+  const payload = activeAuthTab === 'signup'
+    ? { username, email, password }
+    : { username_or_email: username, password };
+
+  try {
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      errorMsg.innerText = data.detail || 'Authentication failed.';
+      errorMsg.classList.remove('hidden');
+      return;
+    }
+
+    // Success
+    authToken = data.token;
+    localStorage.setItem('vibesync_auth_token', authToken);
+    currentUser = data.user;
+    closeAuthModal();
+    await checkAuthStatus();
+  } catch (err) {
+    errorMsg.innerText = 'Unable to connect to authentication server.';
+    errorMsg.classList.remove('hidden');
+  }
+}
+
+async function logout(promptUser = true) {
+  try {
+    if (authToken) {
+      await fetch('/api/v1/auth/logout', { method: 'POST', headers: getAuthHeaders() });
+    }
+  } catch (e) {}
+
+  authToken = null;
+  currentUser = null;
+  localStorage.removeItem('vibesync_auth_token');
+  closeProfileModal();
+  closeModal();
+  await checkAuthStatus();
+  showToast('Logged out of session.', 'logout');
+}
+
+function setPrompt(text) {
+  document.getElementById('searchInput').value = text;
+  searchSongs();
+}
+
+/* AI Recommendation Search (Works seamlessly for Guests & Users) */
+async function searchSongs() {
+  const query = document.getElementById('searchInput').value.trim();
+  if (!query) return;
+
+  const resultsSection = document.getElementById('resultsSection');
+  const resultsContainer = document.getElementById('resultsContainer');
+  const emotionBadge = document.getElementById('emotionBadge');
+  const searchMetaText = document.getElementById('searchMetaText');
+
+  resultsSection.classList.remove('hidden');
+  resultsSection.scrollIntoView({ behavior: 'smooth' });
+
+  // Shimmer Skeleton Loading
+  resultsContainer.innerHTML = Array(6).fill(0).map(() => `
+    <div class="glass rounded-2xl p-5 space-y-4 shimmer border border-white/5">
+      <div class="aspect-video rounded-xl bg-white/5"></div>
+      <div class="h-5 bg-white/10 rounded w-3/4"></div>
+      <div class="h-4 bg-white/5 rounded w-1/2"></div>
+    </div>
+  `).join('');
+
+  try {
+    const res = await fetch('/api/v1/recommend', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ input: query, top_k: 12 })
+    });
+
+    if (!res.ok) throw new Error('API server returned error');
+    const data = await res.json();
+
+    currentTrackList = data.results || [];
+    emotionBadge.innerText = `Mood: ${data.detected_emotion}`;
+    searchMetaText.innerText = `Retrieved ${data.total_found} tracks in ${Math.round(data.latency_ms)}ms across 26,532 indexed catalog`;
+
+    if (currentTrackList.length === 0) {
+      resultsContainer.innerHTML = `<p class="col-span-full text-center text-on-surface-variant py-12">No tracks matched your query. Try searching for an artist, mood, or lyrics.</p>`;
+      return;
+    }
+
+    // Render Cards
+    resultsContainer.innerHTML = currentTrackList.map((track, idx) => `
+      <div class="glass rounded-2xl p-5 space-y-4 group hover:border-secondary/50 transition-all hover:-translate-y-1 relative flex flex-col justify-between">
+        <div>
+          <div class="aspect-square rounded-xl overflow-hidden relative mb-4 bg-black/40">
+            <img src="${track.album_art || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500&auto=format&fit=crop&q=60'}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
+            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-xs">
+              <button onclick="playTrackAtIndex(${idx})" class="w-16 h-16 bg-secondary text-black rounded-full flex items-center justify-center shadow-2xl scale-75 group-hover:scale-100 transition-transform">
+                <span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+              </button>
+            </div>
+            <div class="absolute top-3 left-3 flex gap-2">
+              <span class="bg-black/70 backdrop-blur-md text-secondary border border-secondary/40 text-[11px] font-mono px-2.5 py-1 rounded-full font-bold">
+                ${track.hybrid_score || 90}% Match
+              </span>
+              <span class="bg-black/70 backdrop-blur-md text-primary border border-primary/40 text-[11px] font-mono px-2.5 py-1 rounded-full uppercase">
+                ${track.detected_emotion || 'Balanced'}
+              </span>
+            </div>
+          </div>
+
+          <h4 class="font-headline font-bold text-lg text-on-surface truncate">${track.song_name}</h4>
+          <p class="text-on-surface-variant text-sm font-light truncate mb-2">By ${track.artist}</p>
+
+          <!-- 50/30/20 Quantitative Scoring Breakdown -->
+          <div class="grid grid-cols-3 gap-1.5 py-1 mb-2 text-[10px] font-mono">
+            <div class="bg-surface-container-high/80 p-1.5 rounded-lg border border-white/5 text-center">
+              <span class="text-secondary block font-bold">${track.semantic_score || 85}%</span>
+              <span class="text-on-surface-variant text-[9px]">Semantic (50%)</span>
+            </div>
+            <div class="bg-surface-container-high/80 p-1.5 rounded-lg border border-white/5 text-center">
+              <span class="text-primary block font-bold">${track.emotion_score || 80}%</span>
+              <span class="text-on-surface-variant text-[9px]">Emotion (30%)</span>
+            </div>
+            <div class="bg-surface-container-high/80 p-1.5 rounded-lg border border-white/5 text-center">
+              <span class="text-tertiary block font-bold">${track.acoustic_score || 78}%</span>
+              <span class="text-on-surface-variant text-[9px]">Acoustic (20%)</span>
+            </div>
+          </div>
+
+          <!-- Explainable AI (XAI) Reasoning -->
+          <div class="bg-surface-container-high/60 p-3 rounded-xl border border-white/5 text-xs text-on-surface-variant space-y-1">
+            <div class="flex justify-between items-center text-[10px] font-mono">
+              <span class="text-secondary font-bold">Semantic Reasoning:</span>
+              <span class="text-primary">Cluster #${track.acoustic_cluster_id ?? 0}</span>
+            </div>
+            <p>${track.xai?.vibe_explanation || 'Matches query emotional and semantic profile.'}</p>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-3 border-t border-white/5 text-xs font-mono">
+          <button onclick="likeTrack('${track.track_id}', '${escapeQuotes(track.song_name)}', '${escapeQuotes(track.artist)}', '${track.album_art||''}', '${track.spotify_url||''}')" class="text-on-surface-variant hover:text-tertiary transition-colors flex items-center gap-1">
+            <span class="material-symbols-outlined text-sm">favorite</span> Save
+          </button>
+
+          <button onclick="showLyricModal('${escapeQuotes(track.song_name)}', '${escapeQuotes(track.artist)}')" class="text-primary hover:underline flex items-center gap-1">
+            <span class="material-symbols-outlined text-xs">translate</span> Lyrics
+          </button>
+
+          <button onclick="loadSpotifyEmbed('${track.spotify_id || ''}', '${escapeQuotes(track.song_name)}', '${escapeQuotes(track.artist)}')" class="text-secondary hover:underline flex items-center gap-1">
+            <span class="material-symbols-outlined text-xs">play_circle</span> Play Song
+          </button>
+        </div>
+      </div>
+    `).join('');
+
+  } catch (err) {
+    console.error(err);
+    resultsContainer.innerHTML = `<p class="col-span-full text-center text-tertiary py-12">Failed to fetch recommendations. Ensure backend FastAPI is running!</p>`;
+  }
+}
+
+function escapeQuotes(str) {
+  return (str || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
+
+/* Play Real Original Music via Spotify Embed Player */
+function playTrackAtIndex(index) {
+  if (index < 0 || index >= currentTrackList.length) return;
+  currentTrackIndex = index;
+  currentTrackObj = currentTrackList[index];
+
+  document.getElementById('playerSongTitle').innerText = currentTrackObj.song_name;
+  document.getElementById('playerArtistName').innerText = currentTrackObj.artist;
+  document.getElementById('playerAlbumArt').src = currentTrackObj.album_art || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=200&auto=format&fit=crop&q=60';
+
+  if (currentTrackObj.preview_url) {
+    audio.src = currentTrackObj.preview_url;
+    audio.play().catch(() => {});
+    playPauseIcon.innerText = 'pause';
+    initAudioVisualizer();
+  } else {
+    // Launch Spotify Embed Web Player with the REAL original recording!
+    loadSpotifyEmbed(currentTrackObj.spotify_id, currentTrackObj.song_name, currentTrackObj.artist);
+    playPauseIcon.innerText = 'pause';
+  }
+
+  fetch('/api/v1/feedback', {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: JSON.stringify({ track_id: currentTrackObj.track_id, event_type: 'play' })
+  }).catch(() => {});
+}
+
+function loadSpotifyEmbed(spotifyId, songName, artist) {
+  const container = document.getElementById('spotifyEmbedContainer');
+  const wrapper = document.getElementById('spotifyEmbedFrameWrapper');
+
+  if (spotifyId) {
+    wrapper.innerHTML = `
+      <iframe src="https://open.spotify.com/embed/track/${spotifyId}?utm_source=generator&theme=0"
+              width="100%" height="80" frameBorder="0" allowfullscreen=""
+              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+    `;
+  } else {
+    const encoded = encodeURIComponent(`${songName} ${artist}`);
+    wrapper.innerHTML = `
+      <div class="p-4 text-center space-y-2">
+        <p class="text-xs text-on-surface-variant">Stream original recording on Spotify:</p>
+        <a href="https://open.spotify.com/search/${encoded}" target="_blank" class="inline-flex items-center gap-1.5 bg-emerald-500 text-black font-bold px-4 py-2 rounded-full text-xs hover:brightness-110 transition-all">
+          <span class="material-symbols-outlined text-sm">open_in_new</span> Open "${songName}" on Spotify
+        </a>
+      </div>
+    `;
+  }
+  container.classList.remove('hidden');
+}
+
+function toggleSpotifyEmbed() {
+  const container = document.getElementById('spotifyEmbedContainer');
+  if (container.classList.contains('hidden')) {
+    if (currentTrackObj) {
+      loadSpotifyEmbed(currentTrackObj.spotify_id, currentTrackObj.song_name, currentTrackObj.artist);
+    } else if (currentTrackList.length > 0) {
+      playTrackAtIndex(0);
+    }
+  } else {
+    closeSpotifyEmbed();
+  }
+}
+
+function closeSpotifyEmbed() {
+  const container = document.getElementById('spotifyEmbedContainer');
+  container.classList.add('hidden');
+}
+
+function togglePlayPause() {
+  if (currentTrackObj) {
+    if (currentTrackObj.preview_url && audio.src) {
+      if (audio.paused) {
+        audio.play().catch(() => {});
+        playPauseIcon.innerText = 'pause';
+      } else {
+        audio.pause();
+        playPauseIcon.innerText = 'play_arrow';
+      }
+    } else {
+      toggleSpotifyEmbed();
+    }
+  } else if (currentTrackList.length > 0) {
+    playTrackAtIndex(0);
+  }
+}
+
+function playPrevTrack() {
+  if (currentTrackList.length === 0) return;
+  const prevIdx = (currentTrackIndex - 1 + currentTrackList.length) % currentTrackList.length;
+  playTrackAtIndex(prevIdx);
+}
+
+function playNextTrack() {
+  if (currentTrackList.length === 0) return;
+  const nextIdx = (currentTrackIndex + 1) % currentTrackList.length;
+  playTrackAtIndex(nextIdx);
+}
+
+audio.ontimeupdate = () => {
+  if (!audio.duration) return;
+  const progress = (audio.currentTime / audio.duration) * 100;
+  document.getElementById('seekSlider').value = progress;
+  document.getElementById('currentTimeText').innerText = formatTime(audio.currentTime);
+  document.getElementById('durationTimeText').innerText = formatTime(audio.duration);
+};
+
+function seekAudio(val) {
+  if (!audio.duration) return;
+  audio.currentTime = (val / 100) * audio.duration;
+}
+
+function setVolume(val) {
+  audio.volume = val;
+}
+
+function formatTime(secs) {
+  const m = Math.floor(secs / 60);
+  const s = Math.floor(secs % 60);
+  return `${m}:${s < 10 ? '0' : ''}${s}`;
+}
+
+async function likeTrack(track_id, song_name, artist, album_art, spotify_url) {
+  if (!currentUser) {
+    showToast('Please sign in to save songs to your personal library.', 'lock');
+    openAuthModal('signup');
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/v1/likes', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ track_id, song_name, artist, album_art, spotify_url })
+    });
+    if (res.ok) {
+      showToast(`Saved "${song_name}" to your Favorites!`, 'favorite');
+    }
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+function toggleCurrentLike() {
+  if (!currentTrackObj) return;
+  likeTrack(currentTrackObj.track_id, currentTrackObj.song_name, currentTrackObj.artist, currentTrackObj.album_art, currentTrackObj.spotify_url);
+}
+
+/* User Library Modal (Liked Songs, Playlists, Search History) */
+let activeLibraryTab = 'likes';
+async function openLibraryModal(tab = 'likes') {
+  activeLibraryTab = tab;
+  const modal = document.getElementById('modalBackdrop');
+  document.getElementById('modalTitle').innerText = 'My Library';
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+
+  await renderLibraryContent();
+}
+
+async function renderLibraryContent() {
+  const body = document.getElementById('modalBody');
+
+  if (!currentUser) {
+    body.innerHTML = `
+      <div class="py-10 text-center space-y-4">
+        <span class="material-symbols-outlined text-5xl text-secondary">lock</span>
+        <h4 class="font-headline text-lg font-bold text-white">Your Personal Music Library</h4>
+        <p class="text-xs text-on-surface-variant max-w-sm mx-auto">
+          Sign in or create a free account to track your AI search history, saved songs, and generated playlists across devices.
+        </p>
+        <div class="flex justify-center gap-3 pt-2">
+          <button onclick="closeModal(); openAuthModal('login')" class="glass px-5 py-2 rounded-full text-xs font-mono text-white hover:border-secondary">Log In</button>
+          <button onclick="closeModal(); openAuthModal('signup')" class="bg-gradient-to-r from-secondary to-primary text-black font-bold px-5 py-2 rounded-full text-xs font-headline">Sign Up</button>
+        </div>
+      </div>
+    `;
+    return;
+  }
+
+  body.innerHTML = `
+    <!-- Library Tabs -->
+    <div class="flex border-b border-white/10 mb-4 text-xs font-mono">
+      <button onclick="switchLibraryTab('likes')" class="px-4 py-2 ${activeLibraryTab === 'likes' ? 'border-b-2 border-secondary text-secondary font-bold' : 'text-on-surface-variant hover:text-white'}">
+        Liked Songs
+      </button>
+      <button onclick="switchLibraryTab('playlists')" class="px-4 py-2 ${activeLibraryTab === 'playlists' ? 'border-b-2 border-primary text-primary font-bold' : 'text-on-surface-variant hover:text-white'}">
+        My Playlists
+      </button>
+      <button onclick="switchLibraryTab('history')" class="px-4 py-2 ${activeLibraryTab === 'history' ? 'border-b-2 border-tertiary text-tertiary font-bold' : 'text-on-surface-variant hover:text-white'}">
+        Search History
+      </button>
+    </div>
+
+    <div id="libraryTabContent" class="py-2">
+      <div class="p-6 text-center"><div class="w-6 h-6 border-2 border-secondary border-t-transparent rounded-full animate-spin mx-auto"></div></div>
+    </div>
+  `;
+
+  await loadActiveLibraryTab();
+}
+
+async function switchLibraryTab(tab) {
+  activeLibraryTab = tab;
+  await renderLibraryContent();
+}
+
+async function loadActiveLibraryTab() {
+  const container = document.getElementById('libraryTabContent');
+  if (!container) return;
+
+  if (activeLibraryTab === 'likes') {
+    try {
+      const res = await fetch('/api/v1/likes', { headers: getAuthHeaders() });
+      const data = await res.json();
+      const likes = data.liked_songs || [];
+
+      if (likes.length === 0) {
+        container.innerHTML = `<p class="text-center py-8 text-on-surface-variant text-xs font-mono">No liked tracks yet. Click Save on any song card to add it here.</p>`;
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="space-y-2">
+          ${likes.map(s => `
+            <div class="glass p-3 rounded-xl flex justify-between items-center hover:border-white/20 transition-all">
+              <div class="flex items-center gap-3 overflow-hidden">
+                <img src="${s.album_art || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=100'}" class="w-10 h-10 rounded-lg object-cover bg-black/40 shrink-0"/>
+                <div class="overflow-hidden">
+                  <h5 class="font-bold text-white text-sm truncate">${s.song_name}</h5>
+                  <p class="text-xs text-on-surface-variant truncate">${s.artist}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 shrink-0">
+                <a href="${s.spotify_url || '#'}" target="_blank" class="text-secondary text-xs hover:underline flex items-center gap-1 font-mono">
+                  <span class="material-symbols-outlined text-sm">open_in_new</span> Listen
+                </a>
+                <button onclick="removeLike('${s.track_id}')" class="text-on-surface-variant hover:text-red-400 p-1" title="Remove">
+                  <span class="material-symbols-outlined text-base">delete</span>
+                </button>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    } catch (e) {
+      container.innerHTML = `<p class="text-red-400 text-xs font-mono">Failed to load favorites.</p>`;
+    }
+
+  } else if (activeLibraryTab === 'playlists') {
+    try {
+      const res = await fetch('/api/v1/playlists', { headers: getAuthHeaders() });
+      const data = await res.json();
+      const playlists = data.playlists || [];
+
+      container.innerHTML = `
+        <div class="space-y-3">
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-xs text-on-surface-variant font-mono">Curated personal playlists (${playlists.length})</span>
+            <button onclick="openPlaylistModal(false)" class="glass border-primary/40 text-primary hover:bg-primary/10 text-xs px-3 py-1 rounded-full font-mono flex items-center gap-1">
+              <span class="material-symbols-outlined text-sm">add</span> New Playlist
+            </button>
+          </div>
+
+          ${playlists.length === 0 ? `<p class="text-center py-6 text-on-surface-variant text-xs font-mono">No playlists created yet. Search songs and click "Save as Playlist".</p>` : ''}
+
+          ${playlists.map(p => `
+            <div class="glass p-4 rounded-xl space-y-2 border border-white/5 hover:border-primary/40 transition-all">
+              <div class="flex justify-between items-center">
+                <h5 class="font-bold text-white text-sm font-headline">${p.playlist_name}</h5>
+                <span class="text-xs font-mono text-primary">${p.track_ids ? p.track_ids.length : 0} tracks</span>
+              </div>
+              <p class="text-[11px] text-on-surface-variant font-mono">Created: ${new Date(p.created_at).toLocaleDateString()}</p>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    } catch (e) {
+      container.innerHTML = `<p class="text-red-400 text-xs font-mono">Failed to load playlists.</p>`;
+    }
+
+  } else if (activeLibraryTab === 'history') {
+    try {
+      const res = await fetch('/api/v1/history', { headers: getAuthHeaders() });
+      const data = await res.json();
+      const history = data.history || [];
+
+      if (history.length === 0) {
+        container.innerHTML = `<p class="text-center py-8 text-on-surface-variant text-xs font-mono">No search history recorded yet for your account.</p>`;
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="space-y-2 font-mono text-xs">
+          ${history.map(h => `
+            <div class="glass p-3 rounded-xl flex justify-between items-center cursor-pointer hover:border-secondary/40 transition-all" onclick="closeModal(); setPrompt('${escapeQuotes(h.query)}')">
+              <div>
+                <p class="font-bold text-white text-sm">"${h.query}"</p>
+                <span class="text-on-surface-variant text-[11px]">Detected Emotion: <strong class="text-secondary uppercase">${h.detected_emotion}</strong></span>
+              </div>
+              <span class="text-secondary text-[11px] shrink-0">${new Date(h.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    } catch (e) {
+      container.innerHTML = `<p class="text-red-400 text-xs font-mono">Failed to load search history.</p>`;
+    }
+  }
+}
+
+async function removeLike(track_id) {
+  try {
+    await fetch(`/api/v1/likes/${track_id}`, { method: 'DELETE', headers: getAuthHeaders() });
+    await loadActiveLibraryTab();
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+/* Toast Notification System */
+let toastTimeout = null;
+function showToast(message, icon = 'check_circle') {
+  const toast = document.getElementById('toastNotification');
+  if (!toast) return;
+  document.getElementById('toastMessage').innerText = message;
+  document.getElementById('toastIcon').innerText = icon;
+
+  toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+  toast.classList.add('translate-y-0', 'opacity-100');
+
+  if (toastTimeout) clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => {
+    toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+    toast.classList.remove('translate-y-0', 'opacity-100');
+  }, 3500);
+}
+
+/* Custom Themed Create Playlist Flow (Replaces browser prompt) */
+let playlistSaveFromResults = false;
+
+function openPlaylistModal(isFromResults = false) {
+  if (!currentUser) {
+    showToast('Please sign in or create an account to save playlists.', 'lock');
+    openAuthModal('signup');
+    return;
+  }
+
+  playlistSaveFromResults = isFromResults;
+  const modal = document.getElementById('createPlaylistModal');
+  const context = document.getElementById('playlistModalContext');
+  const badge = document.getElementById('playlistTrackCountBadge');
+  const input = document.getElementById('newPlaylistNameInput');
+  const title = document.getElementById('playlistModalTitle');
+  const subtitle = document.getElementById('playlistModalSubtitle');
+
+  input.value = '';
+  input.classList.remove('border-red-500');
+
+  if (isFromResults) {
+    if (currentTrackList.length === 0) {
+      showToast('Search for songs first before saving as a playlist.', 'info');
+      return;
+    }
+    context.classList.remove('hidden');
+    context.classList.add('flex');
+    badge.innerText = `${currentTrackList.length} Tracks Ready`;
+
+    const query = document.getElementById('searchInput').value.trim();
+    input.value = query ? `Vibe: ${query.charAt(0).toUpperCase() + query.slice(1)}` : 'My Sonic Vibe';
+    title.innerText = 'Save Current Search to Playlist';
+    subtitle.innerText = 'Preserve all recommended songs into a themed collection';
+  } else {
+    context.classList.add('hidden');
+    context.classList.remove('flex');
+    title.innerText = 'Create Vibe Playlist';
+    subtitle.innerText = 'Curate and save a custom mood to your library';
+  }
+
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+  input.focus();
+}
+
+function closePlaylistModal() {
+  const modal = document.getElementById('createPlaylistModal');
+  modal.classList.add('hidden');
+  modal.classList.remove('flex');
+}
+
+function setPlaylistNameSuggestion(name) {
+  const input = document.getElementById('newPlaylistNameInput');
+  input.value = name;
+  input.classList.remove('border-red-500');
+  input.focus();
+}
+
+async function confirmCreatePlaylist() {
+  const input = document.getElementById('newPlaylistNameInput');
+  const name = input.value.trim();
+  if (!name) {
+    input.classList.add('border-red-500');
+    return;
+  }
+
+  const trackIds = playlistSaveFromResults
+    ? currentTrackList.map(t => t.track_id || t.spotify_id).filter(Boolean)
+    : [];
+
+  try {
+    const res = await fetch('/api/v1/playlists', {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ playlist_name: name, track_ids: trackIds })
+    });
+    if (res.ok) {
+      closePlaylistModal();
+      showToast(`Playlist "${name}" (${trackIds.length} tracks) saved to your Library!`);
+      if (!document.getElementById('profileModal').classList.contains('hidden')) {
+        await loadProfileStatsAndContent();
+      }
+      if (!document.getElementById('modalBackdrop').classList.contains('hidden')) {
+        await loadActiveLibraryTab();
+      }
+    } else {
+      const err = await res.json();
+      showToast(err.detail || 'Failed to create playlist.', 'error');
+    }
+  } catch (e) {
+    console.error(e);
+    showToast('Network error creating playlist.', 'error');
+  }
+}
+
+function createPlaylistFromResults() {
+  openPlaylistModal(true);
+}
+
+function promptCreatePlaylist() {
+  openPlaylistModal(false);
+}
+
+/* Dedicated User Profile Section */
+let activeProfileTab = 'playlists';
+let cachedUserPlaylists = [];
+let cachedUserLikes = [];
+let cachedUserHistory = [];
+
+async function openProfileModal() {
+  if (!currentUser) {
+    openAuthModal('login');
+    return;
+  }
+
+  document.getElementById('profileUsername').innerText = currentUser.username;
+  document.getElementById('profileEmail').innerText = currentUser.email;
+  document.getElementById('profileAvatarBig').innerText = (currentUser.username || 'U').charAt(0).toUpperCase();
+
+  const modal = document.getElementById('profileModal');
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+
+  await loadProfileStatsAndContent();
+}
+
+function closeProfileModal() {
+  const modal = document.getElementById('profileModal');
+  modal.classList.add('hidden');
+  modal.classList.remove('flex');
+}
+
+function switchProfileTab(tab) {
+  activeProfileTab = tab;
+  const tabPlaylists = document.getElementById('profileTabPlaylists');
+  const tabLikes = document.getElementById('profileTabLikes');
+  const tabHistory = document.getElementById('profileTabHistory');
+
+  [tabPlaylists, tabLikes, tabHistory].forEach(btn => {
+    btn.className = 'px-3 py-2 border-b-2 border-transparent text-on-surface-variant hover:text-white transition-colors';
+  });
+
+  if (tab === 'playlists') {
+    tabPlaylists.className = 'px-3 py-2 border-b-2 border-primary text-primary font-bold';
+  } else if (tab === 'likes') {
+    tabLikes.className = 'px-3 py-2 border-b-2 border-tertiary text-tertiary font-bold';
+  } else if (tab === 'history') {
+    tabHistory.className = 'px-3 py-2 border-b-2 border-secondary text-secondary font-bold';
+  }
+
+  renderProfileTabContent();
+}
+
+async function loadProfileStatsAndContent() {
+  const content = document.getElementById('profileTabContent');
+  content.innerHTML = `<div class="p-8 text-center"><div class="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div></div>`;
+
+  try {
+    const [pRes, lRes, hRes] = await Promise.all([
+      fetch('/api/v1/playlists', { headers: getAuthHeaders() }),
+      fetch('/api/v1/likes', { headers: getAuthHeaders() }),
+      fetch('/api/v1/history', { headers: getAuthHeaders() })
+    ]);
+
+    cachedUserPlaylists = pRes.ok ? (await pRes.json()).playlists || [] : [];
+    cachedUserLikes = lRes.ok ? (await lRes.json()).liked_songs || [] : [];
+    cachedUserHistory = hRes.ok ? (await hRes.json()).history || [] : [];
+
+    document.getElementById('profilePlaylistCount').innerText = cachedUserPlaylists.length;
+    document.getElementById('profileLikedCount').innerText = cachedUserLikes.length;
+    document.getElementById('profileHistoryCount').innerText = cachedUserHistory.length;
+
+    renderProfileTabContent();
+  } catch (e) {
+    console.error(e);
+    content.innerHTML = `<p class="text-xs font-mono text-red-400 text-center py-6">Failed to load profile data.</p>`;
+  }
+}
+
+function renderProfileTabContent() {
+  const content = document.getElementById('profileTabContent');
+
+  if (activeProfileTab === 'playlists') {
+    if (cachedUserPlaylists.length === 0) {
+      content.innerHTML = `
+        <div class="text-center py-8 space-y-3">
+          <p class="text-xs font-mono text-on-surface-variant">No playlists created yet.</p>
+          <button onclick="openPlaylistModal(false)" class="glass border-primary/40 text-primary hover:bg-primary/10 text-xs px-3.5 py-1.5 rounded-full font-mono inline-flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-sm">add</span> Create First Playlist
+          </button>
+        </div>
+      `;
+      return;
+    }
+    content.innerHTML = cachedUserPlaylists.map(p => `
+      <div class="glass p-3.5 rounded-xl border border-white/5 hover:border-primary/40 transition-all flex items-center justify-between">
+        <div class="overflow-hidden mr-3">
+          <h5 class="font-bold text-white text-sm font-headline truncate">${p.playlist_name}</h5>
+          <div class="flex items-center gap-3 text-[11px] text-on-surface-variant font-mono mt-0.5">
+            <span class="text-primary font-semibold">${p.track_ids ? p.track_ids.length : 0} tracks</span>
+            <span>&bull;</span>
+            <span>${new Date(p.created_at).toLocaleDateString()}</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <button onclick="deleteUserPlaylist(${p.id}, '${escapeQuotes(p.playlist_name)}')" class="text-on-surface-variant hover:text-red-400 p-1.5 rounded-lg hover:bg-white/5 transition-colors" title="Delete Playlist">
+            <span class="material-symbols-outlined text-base">delete</span>
+          </button>
+        </div>
+      </div>
+    `).join('');
+
+  } else if (activeProfileTab === 'likes') {
+    if (cachedUserLikes.length === 0) {
+      content.innerHTML = `<p class="text-center py-8 text-xs font-mono text-on-surface-variant">No liked songs yet. Click the heart icon on any track to save it here.</p>`;
+      return;
+    }
+    content.innerHTML = cachedUserLikes.map(s => `
+      <div class="glass p-3 rounded-xl border border-white/5 hover:border-tertiary/40 transition-all flex items-center justify-between">
+        <div class="flex items-center gap-3 overflow-hidden mr-3">
+          <img src="${s.album_art || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=100'}" class="w-10 h-10 rounded-lg object-cover bg-black/40 shrink-0"/>
+          <div class="overflow-hidden">
+            <h5 class="font-bold text-white text-sm truncate">${s.song_name}</h5>
+            <p class="text-xs text-on-surface-variant truncate">${s.artist}</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <a href="${s.spotify_url || '#'}" target="_blank" class="text-secondary text-xs hover:underline flex items-center gap-1 font-mono">
+            <span class="material-symbols-outlined text-sm">open_in_new</span> Listen
+          </a>
+          <button onclick="removeLikeFromProfile('${s.track_id}')" class="text-on-surface-variant hover:text-red-400 p-1.5 rounded-lg hover:bg-white/5 transition-colors" title="Remove from favorites">
+            <span class="material-symbols-outlined text-base">delete</span>
+          </button>
+        </div>
+      </div>
+    `).join('');
+
+  } else if (activeProfileTab === 'history') {
+    if (cachedUserHistory.length === 0) {
+      content.innerHTML = `<p class="text-center py-8 text-xs font-mono text-on-surface-variant">No vibe searches logged yet.</p>`;
+      return;
+    }
+    content.innerHTML = cachedUserHistory.map(h => `
+      <div class="glass p-3 rounded-xl border border-white/5 hover:border-secondary/40 transition-all flex items-center justify-between cursor-pointer group" onclick="closeProfileModal(); setPrompt('${escapeQuotes(h.query)}')">
+        <div class="overflow-hidden mr-3">
+          <p class="font-bold text-white text-sm truncate group-hover:text-secondary transition-colors">"${h.query}"</p>
+          <div class="flex items-center gap-2 text-[11px] text-on-surface-variant font-mono mt-0.5">
+            <span>Emotion:</span>
+            <span class="text-secondary uppercase font-semibold">${h.detected_emotion}</span>
+          </div>
+        </div>
+        <span class="text-[11px] font-mono text-secondary shrink-0 bg-secondary/10 px-2.5 py-1 rounded-full group-hover:bg-secondary group-hover:text-black transition-all">Search Again</span>
+      </div>
+    `).join('');
+  }
+}
+
+async function deleteUserPlaylist(id, name) {
+  try {
+    const res = await fetch(`/api/v1/playlists/${id}`, { method: 'DELETE', headers: getAuthHeaders() });
+    if (res.ok) {
+      showToast(`Playlist "${name}" deleted.`);
+      await loadProfileStatsAndContent();
+    }
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+async function removeLikeFromProfile(track_id) {
+  try {
+    await fetch(`/api/v1/likes/${track_id}`, { method: 'DELETE', headers: getAuthHeaders() });
+    showToast('Removed from favorites.');
+    await loadProfileStatsAndContent();
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+/* Modals for Lyrics and Market Analytics */
+async function showLyricModal(songName, artist) {
+  const modal = document.getElementById('modalBackdrop');
+  document.getElementById('modalTitle').innerText = `Lyric Translation & Emotion Breakdown: ${songName}`;
+  const body = document.getElementById('modalBody');
+  body.innerHTML = `
+    <div class="p-6 text-center space-y-3">
+      <div class="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+      <p class="text-xs font-mono text-on-surface-variant">Translating lyrics & analyzing sentiment...</p>
+    </div>
+  `;
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+
+  try {
+    const res = await fetch('/api/v1/lyrics/translate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ song_name: songName, artist: artist, target_language: 'English' })
+    });
+    const data = await res.json();
+    const lines = data.heatmap_lines || [];
+
+    body.innerHTML = `
+      <div class="space-y-4">
+        <div class="flex justify-between items-center bg-surface-container-high/80 p-3 rounded-xl border border-white/10 text-xs font-mono">
+          <div class="flex items-center gap-2">
+            <span class="text-on-surface-variant">Language:</span>
+            <span class="bg-primary/20 text-primary border border-primary/30 px-2.5 py-0.5 rounded-full font-bold">${data.language}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-on-surface-variant">Dominant Emotion:</span>
+            <span class="bg-secondary/20 text-secondary border border-secondary/30 px-2.5 py-0.5 rounded-full uppercase font-bold">${data.dominant_emotion}</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="glass p-4 rounded-xl space-y-2">
+            <h5 class="text-xs font-mono font-bold text-secondary border-b border-white/10 pb-2 mb-2">Original Lyrics (${data.language})</h5>
+            ${lines.map(line => `
+              <div class="p-2 rounded-lg text-xs font-body leading-relaxed border border-white/5" style="background: ${line.bg}; border-left: 3px solid ${line.color}">
+                <p class="font-bold text-on-surface">${line.original}</p>
+              </div>
+            `).join('')}
+          </div>
+
+          <div class="glass p-4 rounded-xl space-y-2">
+            <h5 class="text-xs font-mono font-bold text-primary border-b border-white/10 pb-2 mb-2">English Translation</h5>
+            ${lines.map(line => `
+              <div class="p-2 rounded-lg text-xs font-body leading-relaxed border border-white/5" style="background: ${line.bg}; border-left: 3px solid ${line.color}">
+                <p class="text-on-surface-variant font-medium">${line.translated}</p>
+                <div class="flex justify-between items-center mt-1 text-[10px] font-mono" style="color: ${line.color}">
+                  <span>${line.label}</span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  } catch (err) {
+    body.innerHTML = `<p class="text-tertiary">Failed to load translation.</p>`;
+  }
+}
+
+async function showAnalyticsModal() {
+  const modal = document.getElementById('modalBackdrop');
+  document.getElementById('modalTitle').innerText = 'Market Intelligence & Decadal Trends';
+  const body = document.getElementById('modalBody');
+  body.innerHTML = `
+    <div class="p-6 text-center space-y-3">
+      <div class="w-8 h-8 border-2 border-secondary border-t-transparent rounded-full animate-spin mx-auto"></div>
+      <p class="text-xs font-mono text-on-surface-variant">Calculating SQL CTEs and Window Functions...</p>
+    </div>
+  `;
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+
+  try {
+    const res = await fetch('/api/v1/analytics/trends');
+    const data = await res.json();
+    const trends = data.trends || [];
+
+    body.innerHTML = `
+      <div class="space-y-4">
+        <div class="flex justify-between items-center">
+          <span class="text-xs text-on-surface-variant font-mono">Decadal Mood & Feature Trends across 26,532 tracks</span>
+          <a href="/api/v1/analytics/export-csv" target="_blank" class="glass text-secondary hover:text-white px-3 py-1.5 rounded-full text-xs font-mono transition-all flex items-center gap-1 border border-secondary/40">
+            <span class="material-symbols-outlined text-sm">download</span> Export CSV
+          </a>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border border-white/10 rounded-xl overflow-hidden">
+            <thead class="bg-surface-container-high text-on-surface font-mono">
+              <tr>
+                <th class="p-3">Decade</th>
+                <th class="p-3">Track Count</th>
+                <th class="p-3">Top Emotion</th>
+                <th class="p-3">Avg Valence</th>
+                <th class="p-3">Avg Energy</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-white/5 font-mono">
+              ${trends.map(t => `
+                <tr class="hover:bg-white/5 transition-colors">
+                  <td class="p-3 font-bold text-secondary">${t.decade}</td>
+                  <td class="p-3 text-on-surface">${t.track_count}</td>
+                  <td class="p-3 text-primary uppercase">${t.primary_emotion || 'Balanced'}</td>
+                  <td class="p-3 text-on-surface-variant">${t.avg_valence ? t.avg_valence.toFixed(2) : '0.50'}</td>
+                  <td class="p-3 text-on-surface-variant">${t.avg_energy ? t.avg_energy.toFixed(2) : '0.60'}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  } catch (e) {
+    body.innerHTML = `<p class="text-tertiary">Failed to load analytics.</p>`;
+  }
+}
+
+function showLikesModal() {
+  openLibraryModal('likes');
+}
+
+function showHistoryModal() {
+  openLibraryModal('history');
+}
+
+function closeModal() {
+  const modal = document.getElementById('modalBackdrop');
+  modal.classList.add('hidden');
+  modal.classList.remove('flex');
+}
+
+// Audio visualizer setup
+let audioCtx = null;
+let analyser = null;
+
+function initAudioVisualizer() {
+  if (audioCtx) return;
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    audioCtx = new AudioContext();
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 64;
+
+    const source = audioCtx.createMediaElementSource(audio);
+    source.connect(analyser);
+    analyser.connect(audioCtx.destination);
+
+    const canvas = document.getElementById('playerVisualizerCanvas');
+    const ctx = canvas.getContext('2d');
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+
+    function draw() {
+      requestAnimationFrame(draw);
+      analyser.getByteFrequencyData(dataArray);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const barWidth = (canvas.width / bufferLength) * 1.5;
+      let x = 0;
+      for (let i = 0; i < bufferLength; i++) {
+        const barHeight = (dataArray[i] / 255) * canvas.height;
+        ctx.fillStyle = '#00eefc';
+        ctx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+        x += barWidth + 1;
+      }
+    }
+    draw();
+  } catch (e) {}
+}
+</script>
+</body>
+</html>
