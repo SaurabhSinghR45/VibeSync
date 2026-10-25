@@ -13,8 +13,8 @@ services:
       - SPOTIFY_CLIENT_ID=${SPOTIFY_CLIENT_ID:-}
       - SPOTIFY_CLIENT_SECRET=${SPOTIFY_CLIENT_SECRET:-}
     volumes:
-      - ./data:/app/data
-      - ./models:/app/models
+      - ./backend/data:/app/backend/data
+      - ./backend/models:/app/backend/models
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
