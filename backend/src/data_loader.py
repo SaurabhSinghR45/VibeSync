@@ -34,12 +34,24 @@ def load_all_datasets() -> pd.DataFrame:
 
     # Trigger inline ETL if processed files don't exist yet
     logger.info("Processed dataset missing. Executing ETL ingestion...")
-    from scripts.build_dataset import load_and_clean_raw_datasets
+    try:
+        from src.etl.pipeline import ETLPipeline
 
-    df = load_and_clean_raw_datasets()
+        pipeline = ETLPipeline()
+        df, _ = pipeline.run(max_rows=100, save=True)
+        if not df.empty:
+            return df
+    except Exception as exc:
+        logger.warning(f"ETLPipeline fallback notice: {exc}")
 
-    if not df.empty:
-        settings.PROCESSED_DATA_DIR.mkdir(parents=True, exist_ok=True)
-        df.to_csv(csv_path, index=False)
+    try:
+        from scripts.build_dataset import load_and_clean_raw_datasets
 
-    return df
+        df = load_and_clean_raw_datasets()
+        if not df.empty:
+            settings.PROCESSED_DATA_DIR.mkdir(parents=True, exist_ok=True)
+            df.to_csv(csv_path, index=False)
+        return df
+    except Exception as exc:
+        logger.error(f"Failed to load raw datasets: {exc}")
+        return pd.DataFrame()

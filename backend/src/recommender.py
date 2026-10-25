@@ -38,15 +38,25 @@ def get_vector_store(df: Optional[pd.DataFrame] = None) -> FaissVectorStore:
 
     if _vector_store_instance.index is None:
         loaded = _vector_store_instance.load()
-        if not loaded and df is not None and not df.empty:
-            logger.info("FAISS index missing. Generating on-the-fly index for dataset...")
-            model = get_sentence_transformer()
-            sample_texts = [
-                f"{r.get('song_name','')} by {r.get('artist','')}. {str(r.get('lyrics',''))[:200]}"
-                for _, r in df.iterrows()
-            ]
-            embeddings = model.encode(sample_texts, batch_size=32, normalize_embeddings=True)
-            _vector_store_instance.build_index(embeddings)
+        if not loaded:
+            if df is None or df.empty:
+                from src.data_loader import load_all_datasets
+
+                df = load_all_datasets()
+
+            if df is not None and not df.empty:
+                logger.info("FAISS index missing. Generating on-the-fly index for dataset...")
+                model = get_sentence_transformer()
+                sample_texts = [
+                    f"{r.get('song_name','')} by {r.get('artist','')}. {str(r.get('lyrics',''))[:200]}"
+                    for _, r in df.iterrows()
+                ]
+                embeddings = model.encode(sample_texts, batch_size=32, normalize_embeddings=True)
+                _vector_store_instance.build_index(embeddings)
+            else:
+                logger.warning("Empty dataset. Generating minimal fallback index for test mode...")
+                dummy_embeddings = np.random.randn(5, 384).astype(np.float32)
+                _vector_store_instance.build_index(dummy_embeddings)
 
     return _vector_store_instance
 

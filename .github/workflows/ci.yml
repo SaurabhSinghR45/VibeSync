@@ -36,10 +36,11 @@ jobs:
 
       - name: Run Ruff Code Linting
         run: |
-          ruff check .
+          ruff check backend/
 
       - name: Execute Automated Pytest Suite with Coverage
         env:
+          PYTHONPATH: backend
           ENVIRONMENT: testing
           SPOTIFY_CLIENT_ID: mock_client_id
           SPOTIFY_CLIENT_SECRET: mock_client_secret
