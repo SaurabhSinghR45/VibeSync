@@ -15,15 +15,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Install CPU-only PyTorch first (slashes image from ~4GB to ~300MB)
-RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
-
-# Install remaining requirements strictly preferring CPU wheels
+# Install lightweight dependencies (FastEmbed ONNX, FastAPI, Uvicorn, Pandas, FAISS)
 COPY requirements.txt .
-RUN pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
-# Pre-bake FastEmbed ONNX model directly into image to prevent runtime download memory spikes
+# Pre-bake FastEmbed ONNX model directly into image to eliminate runtime downloads and memory spikes
 RUN python -c "from fastembed import TextEmbedding; list(TextEmbedding(model_name='sentence-transformers/all-MiniLM-L6-v2').embed(['build_warmup']))"
 
 # Stage 2: Production Runner

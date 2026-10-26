@@ -4,7 +4,6 @@ from typing import Any, Dict, List, Optional
 
 import numpy as np
 import pandas as pd
-from sentence_transformers import SentenceTransformer
 from src.config import settings
 from src.database import QueryAnalyticsLog, engine
 from src.emotion import detect_emotion
@@ -61,22 +60,15 @@ def get_sentence_transformer() -> Any:
         except Exception as exc:
             logger.warning(f"FastEmbed init notice ({exc}), falling back to SentenceTransformer...")
 
-        logger.info(f"Loading SentenceTransformer model ({settings.EMBEDDING_MODEL_NAME})...")
         try:
-            import torch
+            logger.info(f"Attempting SentenceTransformer fallback ({settings.EMBEDDING_MODEL_NAME})...")
+            from sentence_transformers import SentenceTransformer
 
-            torch.set_grad_enabled(False)
-        except Exception:
-            pass
-
-        st_model = SentenceTransformer(settings.EMBEDDING_MODEL_NAME)
-        try:
-            st_model.eval()
-            for param in st_model.parameters():
-                param.requires_grad = False
-        except Exception:
-            pass
-        _model_instance = st_model
+            st_model = SentenceTransformer(settings.EMBEDDING_MODEL_NAME)
+            _model_instance = st_model
+        except Exception as st_exc:
+            logger.error(f"SentenceTransformer fallback failed ({st_exc}). FastEmbed required.")
+            raise st_exc
     return _model_instance
 
 
