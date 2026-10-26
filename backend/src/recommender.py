@@ -16,7 +16,7 @@ from src.vector_store import FaissVectorStore
 logger = logging.getLogger("vibesync.recommender")
 
 # Global singleton model & vector store instances
-_model_instance: Optional[SentenceTransformer] = None
+_model_instance: Any = None
 _vector_store_instance: Optional[FaissVectorStore] = None
 _clusterer_instance: Optional[AcousticClusterer] = None
 
@@ -24,12 +24,12 @@ _clusterer_instance: Optional[AcousticClusterer] = None
 class FastEmbeddingWrapper:
     """Ultra-lightweight ONNX Runtime embedding engine using FastEmbed (~45MB RAM vs PyTorch's 380MB)."""
 
-    def __init__(self, model_name: str = "sentence-transformers/all-MiniLM-L6-v2"):
+    def __init__(self, model_name: str = "sentence-transformers/all-MiniLM-L6-v2") -> None:
         from fastembed import TextEmbedding
 
         self.model = TextEmbedding(model_name=model_name)
 
-    def encode(self, texts, normalize_embeddings: bool = True, batch_size: int = 32):
+    def encode(self, texts: Any, normalize_embeddings: bool = True, batch_size: int = 32) -> np.ndarray:
         import numpy as np
 
         if isinstance(texts, str):
@@ -43,7 +43,7 @@ class FastEmbeddingWrapper:
         return arr
 
 
-def get_sentence_transformer():
+def get_sentence_transformer() -> Any:
     """
     Lazy load embedding model singleton.
     Prefers FastEmbed (ONNX Runtime, ~45MB RAM) to operate safely on 512MB instances like Render.
@@ -53,9 +53,9 @@ def get_sentence_transformer():
     if _model_instance is None:
         try:
             logger.info("Initializing ultra-lightweight ONNX FastEmbed embedding engine (~45MB RAM)...")
-            _model_instance = FastEmbeddingWrapper()
-            # Warm up once
-            _ = _model_instance.encode(["warmup"])
+            fast_model = FastEmbeddingWrapper()
+            fast_model.encode(["warmup"])
+            _model_instance = fast_model
             logger.info("FastEmbed ONNX engine loaded successfully.")
             return _model_instance
         except Exception as exc:
@@ -69,13 +69,14 @@ def get_sentence_transformer():
         except Exception:
             pass
 
-        _model_instance = SentenceTransformer(settings.EMBEDDING_MODEL_NAME)
+        st_model = SentenceTransformer(settings.EMBEDDING_MODEL_NAME)
         try:
-            _model_instance.eval()
-            for param in _model_instance.parameters():
+            st_model.eval()
+            for param in st_model.parameters():
                 param.requires_grad = False
         except Exception:
             pass
+        _model_instance = st_model
     return _model_instance
 
 
@@ -95,7 +96,7 @@ def get_vector_store(df: Optional[pd.DataFrame] = None) -> FaissVectorStore:
 
             if df is not None and not df.empty:
                 logger.info("FAISS index missing. Generating on-the-fly index for dataset...")
-                model = get_sentence_transformer()
+                model: Any = get_sentence_transformer()
                 sample_texts = [
                     f"{r.get('song_name','')} by {r.get('artist','')}. {str(r.get('lyrics',''))[:200]}"
                     for _, r in df.iterrows()
@@ -130,7 +131,7 @@ class HybridRecommender:
 
     def __init__(self, df: pd.DataFrame, vector_store: Optional[FaissVectorStore] = None):
         self.df = df
-        self.model = get_sentence_transformer()
+        self.model: Any = get_sentence_transformer()
         self.vector_store = vector_store or get_vector_store(df)
         self.clusterer = get_acoustic_clusterer(df) if not df.empty else AcousticClusterer()
 

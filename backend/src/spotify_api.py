@@ -2,6 +2,7 @@ import base64
 import logging
 import time
 from typing import Any, Dict, Optional
+from urllib.parse import quote
 
 import requests
 from src.config import settings
@@ -78,7 +79,7 @@ def get_song_details(song: str, artist: str) -> Dict[str, Any]:
     if cache_key in _song_details_cache:
         return _song_details_cache[cache_key]
 
-    encoded_query = requests.utils.quote(query)
+    encoded_query = quote(query)
     search_url = f"https://open.spotify.com/search/{encoded_query}"
     fallback_response = {"url": search_url, "image": None, "preview_url": None, "spotify_id": None}
 
