@@ -73,18 +73,27 @@ class FaissVectorStore:
         return target_path
 
     def load(self, file_path: Optional[Path] = None) -> bool:
-        """Load FAISS index binary file from disk."""
+        """Load FAISS index binary file from disk using memory-mapping to save heap RAM."""
         target_path = file_path or settings.VECTOR_INDEX_PATH
         if not target_path.exists():
             logger.warning(f"FAISS index file not found at {target_path}")
             return False
 
         try:
-            self.index = faiss.read_index(str(target_path))
+            # Use IO_FLAG_MMAP to map file directly from disk into OS page cache with 0 heap RAM overhead
+            self.index = faiss.read_index(str(target_path), faiss.IO_FLAG_MMAP)
             self.dimension = self.index.d
             self._is_trained = True
-            logger.info(f"✅ Loaded FAISS index from {target_path} (Total vectors: {self.index.ntotal})")
+            logger.info(f"✅ Loaded FAISS index via MMAP from {target_path} (Total vectors: {self.index.ntotal})")
             return True
         except Exception as exc:
-            logger.error(f"Error loading FAISS index: {exc}")
-            return False
+            logger.warning(f"MMAP loading notice ({exc}), falling back to standard read...")
+            try:
+                self.index = faiss.read_index(str(target_path))
+                self.dimension = self.index.d
+                self._is_trained = True
+                logger.info(f"✅ Loaded FAISS index from {target_path} (Total vectors: {self.index.ntotal})")
+                return True
+            except Exception as read_exc:
+                logger.error(f"Error loading FAISS index: {read_exc}")
+                return False

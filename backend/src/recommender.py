@@ -22,11 +22,24 @@ _clusterer_instance: Optional[AcousticClusterer] = None
 
 
 def get_sentence_transformer() -> SentenceTransformer:
-    """Lazy load SentenceTransformer model singleton."""
+    """Lazy load SentenceTransformer model singleton in evaluation mode without gradients to conserve RAM."""
     global _model_instance
     if _model_instance is None:
         logger.info(f"Loading SentenceTransformer model ({settings.EMBEDDING_MODEL_NAME})...")
+        try:
+            import torch
+
+            torch.set_grad_enabled(False)
+        except Exception:
+            pass
+
         _model_instance = SentenceTransformer(settings.EMBEDDING_MODEL_NAME)
+        try:
+            _model_instance.eval()
+            for param in _model_instance.parameters():
+                param.requires_grad = False
+        except Exception:
+            pass
     return _model_instance
 
 

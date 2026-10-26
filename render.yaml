@@ -20,6 +20,8 @@ services:
         value: "false"
       - key: USE_HEAVY_EMOTION_MODEL
         value: "false"
+      - key: MALLOC_ARENA_MAX
+        value: "2"
       - key: SECRET_KEY
         generateValue: true
       - key: SPOTIFY_CLIENT_ID

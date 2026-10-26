@@ -38,7 +38,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     VECLIB_MAXIMUM_THREADS=1 \
     NUMEXPR_NUM_THREADS=1 \
     TOKENIZERS_PARALLELISM=false \
-    USE_HEAVY_EMOTION_MODEL=false
+    USE_HEAVY_EMOTION_MODEL=false \
+    MALLOC_ARENA_MAX=2
 
 # Copy virtual environment from builder
 COPY --from=builder /opt/venv /opt/venv
