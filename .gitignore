@@ -33,20 +33,20 @@ ENV/
 
 # Data & Model Binary Blobs
 *.pkl
-*.faiss
-*.parquet
 *.csv
 *.db
 *.sqlite
 *.sqlite3
-models/*
-**/models/*
 data/raw/*
 **/data/raw/*
 data/processed/*.csv
 **/data/processed/*.csv
-data/processed/*.parquet
-**/data/processed/*.parquet
+backend/models/*
+!backend/models/vibe_index.faiss
+backend/data/processed/*
+!backend/data/processed/cleaned_songs.parquet
+!backend/data/processed/normalizer_stats.json
+!backend/data/processed/data_quality_report.json
 
 # Testing & Linting
 .pytest_cache/
