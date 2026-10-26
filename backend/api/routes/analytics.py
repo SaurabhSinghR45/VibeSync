@@ -8,7 +8,14 @@ from src.database.analytics import AnalyticsService
 logger = logging.getLogger("vibesync.api.analytics")
 
 router = APIRouter(tags=["Analytics & Market Intelligence"])
-service = AnalyticsService()
+_service_instance = None
+
+
+def get_analytics_service() -> AnalyticsService:
+    global _service_instance
+    if _service_instance is None:
+        _service_instance = AnalyticsService()
+    return _service_instance
 
 
 @router.get("/api/v1/analytics/trends")
@@ -18,7 +25,7 @@ def get_mood_and_genre_trends() -> Dict[str, Any]:
     Retrieve decadal mood/emotion progression, acoustic feature averages,
     and market share percentages computed via SQL CTEs and Window Functions.
     """
-    trends = service.get_decadal_mood_trends()
+    trends = get_analytics_service().get_decadal_mood_trends()
     return {
         "status": "success",
         "total_periods": len(trends),
@@ -33,7 +40,7 @@ def get_acoustic_sentiment_correlations() -> Dict[str, Any]:
     Retrieve statistical correlation metrics between lyrical sentiment categories
     and acoustic audio features (valence, energy, tempo, acousticness).
     """
-    correlations = service.get_acoustic_sentiment_correlations()
+    correlations = get_analytics_service().get_acoustic_sentiment_correlations()
     return {
         "status": "success",
         "total_emotions": len(correlations),
@@ -48,7 +55,7 @@ def get_telemetry_performance() -> Dict[str, Any]:
     Retrieve search query telemetry metrics, including average latency (ms),
     min/max response times, and mean cosine similarity.
     """
-    metrics = service.get_query_performance_metrics()
+    metrics = get_analytics_service().get_query_performance_metrics()
     return {
         "status": "success",
         "telemetry": metrics,
@@ -81,7 +88,7 @@ def export_analytics_data() -> Response:
     """
     Export comprehensive market intelligence & quantitative data to CSV format.
     """
-    csv_content = service.export_analytics_csv()
+    csv_content = get_analytics_service().export_analytics_csv()
     return Response(
         content=csv_content,
         media_type="text/csv",

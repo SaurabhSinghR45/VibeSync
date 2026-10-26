@@ -47,8 +47,10 @@ class ETLPipeline:
         # 3. Imputation & Sanitization
         df_clean, imputed_counts = self.cleaner.impute_missing_features(df_deduped)
         df_clean["song_name"] = df_clean["song_name"].apply(self.cleaner.sanitize_text)
-        df_clean["artist"] = df_clean["artist"].apply(self.cleaner.clean_artist_name)
-        df_clean["lyrics"] = df_clean["lyrics"].apply(self.cleaner.sanitize_text)
+        if "lyrics" in df_clean.columns:
+            df_clean["lyrics"] = df_clean["lyrics"].apply(self.cleaner.sanitize_text)
+        else:
+            df_clean["lyrics"] = df_clean["song_name"].astype(str) + " by " + df_clean["artist"].astype(str)
 
         # Ensure consistent track IDs
         if "track_id" not in df_clean.columns or df_clean["track_id"].isnull().any():

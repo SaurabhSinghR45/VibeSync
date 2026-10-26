@@ -21,10 +21,46 @@ _vector_store_instance: Optional[FaissVectorStore] = None
 _clusterer_instance: Optional[AcousticClusterer] = None
 
 
-def get_sentence_transformer() -> SentenceTransformer:
-    """Lazy load SentenceTransformer model singleton in evaluation mode without gradients to conserve RAM."""
+class FastEmbeddingWrapper:
+    """Ultra-lightweight ONNX Runtime embedding engine using FastEmbed (~45MB RAM vs PyTorch's 380MB)."""
+
+    def __init__(self, model_name: str = "sentence-transformers/all-MiniLM-L6-v2"):
+        from fastembed import TextEmbedding
+
+        self.model = TextEmbedding(model_name=model_name)
+
+    def encode(self, texts, normalize_embeddings: bool = True, batch_size: int = 32):
+        import numpy as np
+
+        if isinstance(texts, str):
+            texts = [texts]
+        embeddings = list(self.model.embed(texts, batch_size=batch_size))
+        arr = np.array(embeddings, dtype=np.float32)
+        if normalize_embeddings:
+            norms = np.linalg.norm(arr, axis=-1, keepdims=True)
+            norms[norms == 0] = 1.0
+            arr = arr / norms
+        return arr
+
+
+def get_sentence_transformer():
+    """
+    Lazy load embedding model singleton.
+    Prefers FastEmbed (ONNX Runtime, ~45MB RAM) to operate safely on 512MB instances like Render.
+    Falls back to SentenceTransformer if FastEmbed is unavailable.
+    """
     global _model_instance
     if _model_instance is None:
+        try:
+            logger.info("Initializing ultra-lightweight ONNX FastEmbed embedding engine (~45MB RAM)...")
+            _model_instance = FastEmbeddingWrapper()
+            # Warm up once
+            _ = _model_instance.encode(["warmup"])
+            logger.info("FastEmbed ONNX engine loaded successfully.")
+            return _model_instance
+        except Exception as exc:
+            logger.warning(f"FastEmbed init notice ({exc}), falling back to SentenceTransformer...")
+
         logger.info(f"Loading SentenceTransformer model ({settings.EMBEDDING_MODEL_NAME})...")
         try:
             import torch

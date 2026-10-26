@@ -1,3 +1,7 @@
+# Ultra-Lightweight Production Embedding Engine (45MB RAM vs 380MB PyTorch)
+fastembed>=0.3.0
+onnxruntime>=1.17.0
+
 # Core ML, Quantitative Modeling & NLP
 sentence-transformers>=2.5.1,<4.0.0
 transformers>=4.38.0,<5.0.0

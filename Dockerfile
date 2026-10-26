@@ -14,13 +14,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Pre-install CPU-only PyTorch first (reduces image from ~4GB to ~300MB, preventing Render build OOM)
+# Install CPU-only PyTorch first (slashes image from ~4GB to ~300MB)
 RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
 
-# Install remaining project dependencies
+# Install remaining requirements strictly preferring CPU wheels
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
+
+# Pre-bake FastEmbed ONNX model directly into image to prevent runtime download memory spikes
+RUN python -c "from fastembed import TextEmbedding; list(TextEmbedding(model_name='sentence-transformers/all-MiniLM-L6-v2').embed(['build_warmup']))"
 
 # Stage 2: Production Runner
 FROM python:3.11-slim as runner
@@ -39,15 +42,17 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     NUMEXPR_NUM_THREADS=1 \
     TOKENIZERS_PARALLELISM=false \
     USE_HEAVY_EMOTION_MODEL=false \
-    MALLOC_ARENA_MAX=2
+    MALLOC_ARENA_MAX=2 \
+    FASTEMBED_CACHE_PATH=/app/.cache/fastembed
 
-# Copy virtual environment from builder
+# Copy virtual environment and pre-downloaded model cache from builder
 COPY --from=builder /opt/venv /opt/venv
+COPY --from=builder /root/.cache /app/.cache
 
 # Copy application codebase
 COPY . .
 
-# Create unprivileged runtime user and ensure data directories exist
+# Create unprivileged runtime user and ensure data and cache directories are owned by appuser
 RUN useradd -m -u 1000 appuser && \
     mkdir -p backend/data/processed backend/models && \
     chown -R appuser:appuser /app

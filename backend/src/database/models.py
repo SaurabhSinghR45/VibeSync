@@ -265,7 +265,3 @@ def seed_tracks_from_dataframe(df: pd.DataFrame, limit: int = 500) -> int:
         session.commit()
         logger.info(f"Seeded {count} tracks into relational database.")
         return count
-
-
-# Auto-create tables on module import
-init_db()

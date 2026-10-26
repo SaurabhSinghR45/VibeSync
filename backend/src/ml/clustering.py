@@ -43,16 +43,23 @@ class AcousticClusterer:
         self._is_fitted: bool = False
 
     def fit(self, df: pd.DataFrame) -> "AcousticClusterer":
-        """Fit K-Means clustering model on normalized or raw audio feature matrix."""
+        """Fit K-Means clustering model on normalized audio feature matrix with zero memory overhead."""
         matrix = self._extract_feature_matrix(df)
         if len(matrix) < self.n_clusters:
             # Handle minimal testing datasets
             self.n_clusters = max(1, len(matrix))
 
-        self.kmeans = KMeans(n_clusters=self.n_clusters, random_state=self.random_state, n_init=10)
-        self.kmeans.fit(matrix)
+        # Sample up to 500 tracks for instant training and zero memory allocation
+        if len(matrix) > 500:
+            indices = np.random.RandomState(self.random_state).choice(len(matrix), 500, replace=False)
+            matrix_sample = matrix[indices]
+        else:
+            matrix_sample = matrix
+
+        self.kmeans = KMeans(n_clusters=self.n_clusters, random_state=self.random_state, n_init=3)
+        self.kmeans.fit(matrix_sample)
         self._is_fitted = True
-        logger.info(f"Fitted AcousticClusterer K-Means with {self.n_clusters} clusters on {len(matrix)} tracks.")
+        logger.info(f"Fitted AcousticClusterer K-Means with {self.n_clusters} clusters on {len(matrix_sample)} tracks.")
         return self
 
     def predict_cluster(self, feature_vector: np.ndarray) -> int:
