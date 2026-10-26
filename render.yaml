@@ -12,6 +12,14 @@ services:
         value: INFO
       - key: RATE_LIMIT_PER_MINUTE
         value: "60"
+      - key: OMP_NUM_THREADS
+        value: "1"
+      - key: MKL_NUM_THREADS
+        value: "1"
+      - key: TOKENIZERS_PARALLELISM
+        value: "false"
+      - key: USE_HEAVY_EMOTION_MODEL
+        value: "false"
       - key: SECRET_KEY
         generateValue: true
       - key: SPOTIFY_CLIENT_ID

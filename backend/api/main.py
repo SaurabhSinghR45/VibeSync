@@ -1,8 +1,24 @@
+import gc
 import logging
+import os
 import sys
 import time
 from contextlib import asynccontextmanager
 from pathlib import Path
+
+# Restrict multi-threading memory overhead in containerized hosts (Render 512MB RAM limit)
+os.environ.setdefault("OMP_NUM_THREADS", "1")
+os.environ.setdefault("MKL_NUM_THREADS", "1")
+os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
+os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
+
+try:
+    import torch
+
+    torch.set_num_threads(1)
+    torch.set_num_interop_threads(1)
+except Exception:
+    pass
 
 # Ensure backend root is on sys.path for direct script and modular execution
 BACKEND_DIR = Path(__file__).resolve().parent.parent
@@ -49,6 +65,9 @@ async def lifespan(app: FastAPI):
     logger.info("Loading FAISS vector index & SentenceTransformer...")
     _ = get_vector_store()
     get_sentence_transformer()
+
+    # Immediately release startup memory buffers
+    gc.collect()
 
     elapsed = time.time() - start_time
     logger.info(f"✅ VibeSync Engine initialized successfully in {elapsed:.2f} seconds!")
