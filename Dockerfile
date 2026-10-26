@@ -4,7 +4,8 @@ FROM python:3.11-slim as builder
 WORKDIR /app
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    FASTEMBED_CACHE_PATH=/app/.cache/fastembed
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
@@ -47,7 +48,7 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 # Copy virtual environment and pre-downloaded model cache from builder
 COPY --from=builder /opt/venv /opt/venv
-COPY --from=builder /root/.cache /app/.cache
+COPY --from=builder /app/.cache /app/.cache
 
 # Copy application codebase
 COPY . .
