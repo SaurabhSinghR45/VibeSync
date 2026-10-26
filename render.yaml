@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: vibesync
+    runtime: docker
+    plan: free
+    region: oregon
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: LOG_LEVEL
+        value: INFO
+      - key: RATE_LIMIT_PER_MINUTE
+        value: "60"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: SPOTIFY_CLIENT_ID
+        sync: false
+      - key: SPOTIFY_CLIENT_SECRET
+        sync: false
